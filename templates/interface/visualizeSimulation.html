@@ -1,0 +1,87 @@
+{% extends 'interface/base.html' %}
+{% load static %}
+{% block content %}
+<br>
+<h3>Visualization </h3>
+<p>Select one or more statistics to visualize them on graphs</p>
+<script src="{% static 'js/makePlots.js' %}"></script>
+
+<div class="row">
+  <div class="col-sm-2">
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="inlineRadioOptions" id="dailyRadio" value="daily" checked>
+        <label class="form-check-label" for="dailyRadio">Daily</label>
+      </div>
+
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="inlineRadioOptions" id="cumRadio" value="cumulative">
+        <label class="form-check-label" for="cumRadio">Cumulative</label>
+      </div>
+
+      <br>
+      <input type="checkbox" name="plot" id="checkbox-1" value="infected" class="custom" />
+      <label for="checkbox-1">Infected</label><br>
+      <input type="checkbox" name="plot" id="checkbox-2" value="recovered" class="custom" />
+      <label for="checkbox-2">Recovered</label><br>
+      <input type="checkbox" name="plot" id="checkbox-3" value="fatalities" class="custom" />
+      <label for="checkbox-3">Fatalities</label><br>
+      <input type="checkbox" name="plot" id="checkbox-4" value="positive_cases" class="custom" />
+      <label for="checkbox-4">Positive Cases</label><br>
+      <input type="checkbox" name="plot" id="checkbox-5" value="people_tested" class="custom" />
+      <label for="checkbox-5">Total tests</label><br>
+      <br>
+      <input type="submit" value="Submit" class="btn btn-success btn-md" id="submitBtn">
+      <a class="btn btn-md btn-warning" href="{% url 'profile' %}"><i class="fa fa-angle-left"> </i> Go Back to User Home</a>
+  </div>
+  <div class="col" id="target"></div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  var x_data = {{ results|safe }};
+  $("#submitBtn").click(function () {
+    console.log(x_data);
+    
+    $("#target").empty()
+
+    var plotOption = '';
+    $.each($("input[name='inlineRadioOptions']:checked"), function () {
+          plotOption = $(this).val();
+    });
+    console.log(x_data[plotOption]);
+
+    var options = [];
+    // Jquery for checkbox input
+    $.each($("input[name='plot']:checked"), function () {
+      options.push($(this).val());
+    });
+
+
+    for (let i = 0; i < parseInt(options.length); i++) {
+      var mean_plus_std = x_data[plotOption][options[i]].mean.map(function (num, idx) {
+          return num + x_data[plotOption][options[i]].std[idx];
+        });
+
+      var mean_minus_std = x_data[plotOption][options[i]].mean.map(function (num, idx) {
+          return num - x_data[plotOption][options[i]].std[idx];
+        });
+
+      var title = ""
+
+      if (plotOption == 'daily'){
+        title  = "Daily new positive " + options[i] + " ";
+      }
+      else{
+        title = "Cumulative num. " + options[i] + "";
+      }
+      var plotData = makeTraceTriplets(x_data.time, x_data[plotOption][options[i]].mean, mean_plus_std, mean_minus_std, options[i],intervention=x_data['intervention'])
+      var plotDiv = makePlot(plotData, title, options[i], i)
+      document.getElementById("target").appendChild(plotDiv)
+    }
+  });
+</script>
+
+
+
+
+
+{% endblock %}
