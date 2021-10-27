@@ -1,0 +1,16 @@
+numpy
+scipy
+pandas
+django
+celery
+python-decouple
+django-anymail
+djangorestframework
+django-cors-headers
+django-celery-results
+whitenoise
+pyproj==1.9.6
+geopandas==0.6.3
+geopy
+shapely
+matplotlib
