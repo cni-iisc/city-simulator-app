@@ -6,8 +6,8 @@ from django.contrib import admin
 from .models import *
 
 ## Adds the models to the Django admin site
-# admin.site.register(campusData)
-# admin.site.register(campusInstantiation)
+admin.site.register(cityData)
+admin.site.register(cityInstantiation)
 # admin.site.register(interventions)
 # admin.site.register(testingParams)
 # admin.site.register(simulationParams)

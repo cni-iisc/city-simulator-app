@@ -4,16 +4,17 @@ services.py: queries models to get required inputs to launch a task in the backg
 """
 import uuid
 from io import StringIO
+import datetime
 
 import os
 import pandas as pd
+import geopandas as gpd
 from django.urls import reverse
 from django.contrib.sites.shortcuts import get_current_site
-from .tasks import send_mail
+from .tasks import send_mail, run_instantiate
 from .helper import get_activation_url, convert
-from .models import (UserRegisterToken, UserPasswordResetToken)
+from .models import (UserRegisterToken, UserPasswordResetToken, cityInstantiation)
 import json
-# from simulator.staticInst.config import configCreate
 from django.contrib import messages
 import logging
 log = logging.getLogger('interface_log')
@@ -73,4 +74,36 @@ def send_forgotten_password_email(request, user):
 
     log.info(f'Forgot password link email was sent to {to_email}')
     send_template_email(to_email, subject, html_message, context)
+
+def instantiateTask(request):
+    print("In instantiate_Task")
+    user = request.user
+    obj = cityInstantiation.get_latest(user=user) #gives id of the object
+    obj = cityInstantiation.objects.filter(created_by=user, id=obj.id)[0]
+    print(obj)
+    print(obj.inst_name)
+
+    inputFiles = {
+        'demographics': pd.read_csv(StringIO(obj.inst_name.demographics_csv.read().decode('utf-8')), delimiter=',').to_dict(),
+        'employment': pd.read_csv(StringIO(obj.inst_name.employment_csv.read().decode('utf-8')), delimiter=',').to_dict(),
+        'households': pd.read_csv(StringIO(obj.inst_name.households_csv.read().decode('utf-8')), delimiter=',').to_dict(),
+        'odmatrix': pd.read_csv(StringIO(obj.inst_name.odmatrix_csv.read().decode('utf-8')), delimiter=',').to_dict(),
+        'city_profile': json.load(obj.inst_name.city_profile_json),
+        'city' : gpd.read_file(obj.inst_name.city_geojson).to_json(),
+        'objid': obj.id
+    }
+    print("inputFiles Loaded")
+    # print(inputFiles)
+    # inputFilePath = '/'.join(['cityData', f"{ datetime.datetime.today().strftime('%Y%m%d') }", instance.city_name.replace(' ', '_'), filename])
+    cityInstantiation.objects.filter(created_by=user, id=obj.id).update(status='Running')
+    try:
+        print("Starting celeryInst")
+        run_instantiate.apply_async(queue='instQueue', kwargs={'inputFiles': json.dumps(inputFiles)})
+        print("SentCeleryInst")
+        # run_instantiate(inputFiles)
+        ####################
+    except Exception as e:
+        print("Error at run_instantiate")
+        print(e)
+    return True
 

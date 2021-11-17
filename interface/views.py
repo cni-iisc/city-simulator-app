@@ -20,16 +20,16 @@ from django.utils.safestring import mark_safe
 #setting up logs
 import logging
 log = logging.getLogger('interface_log')
-log.info("starting the campussim interface")
+log.info("starting the citysim interface")
 
 
 # custom imports
 from .forms import *
-from .helper import get_or_none, validate_password, validateFormResponse
+from .helper import get_or_none, validate_password
 from .mixins import *
 from .models import *
 from .serializers import *
-from .services import (send_activation_mail, send_forgotten_password_email)
+from .services import (instantiateTask, send_activation_mail, send_forgotten_password_email)
 
 # ## Rest API Endpoints
 # class campusTransCoeffViewSet(viewsets.ModelViewSet):
@@ -151,7 +151,7 @@ class IndexView(AnonymousRequired, AddSnippetsToContext, TemplateView):
 class AboutView(AddSnippetsToContext, TemplateView):
     template_name = 'interface/about.html'
 
-
+#Update this after instantiation is complete
 class ProfileView(LoginRequiredMixin, AddUserToContext, TemplateView):
     template_name = 'interface/profile.html'
 
@@ -226,6 +226,92 @@ class userActivityView(LoginRequiredMixin, AddUserToContext, TemplateView):
         # context['simulations'] = simulationParams.get_all(self.request.user)
         # context['campuses'] = campusData.get_all(self.request.user)
         return context
+
+
+class addDataView(LoginRequiredMixin, AddUserToContext, View):
+    template_name = 'interface/create.html'
+    model = cityData
+    form_class = addCityDataForm
+
+    city_name = ''
+
+    def instantiate(self):
+        q = cityInstantiation(
+            inst_name = cityData.objects.filter(city_name=self.city_name)[0],
+            created_by = self.request.user,
+            created_on = timezone.now()
+        )
+        try:
+            q.save()
+            print("Saved instantiation info")
+        except:
+            print("Unable to save instantiation details")
+        log.info(f'Instantiating city: { self.city_name } is saved for user {self.request.user}. ')
+        return instantiateTask(self.request)
+
+
+    def render(self, request):
+        context = {
+            'form': self.form,
+            'title': 'Create a new instatiation of a synthetic city',
+            'instruction': mark_safe('Upload the required files in the correct .csv, .geojson or .json  formats to instantiate a synthetic city for running simulations.<br> For assistance with the expected files, please check the sample files linked with each file upload field.'),
+            'instance': self.request.user
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request):
+        self.form = addCityDataForm(request.POST, request.FILES)
+        self.city_name = ''
+        if self.form.is_valid():
+            obj = self.form.save()
+            obj.created_by = self.request.user
+            self.city_name = obj.city_name
+            obj.created_on = timezone.now()
+            obj.save()
+            messages.success(request, f'Data for city: { self.city_name } is saved. Please wait while we run this job in the background, on an average you will hear from you us in 2 minutes if the servers are free.')
+            log.info(f'Data for city: { self.city_name } is saved for user {self.request.user}. ')
+            #################
+            #Debugging changes
+            #############
+            # if self.instantiate():
+            try:
+                self.instantiate()
+            except Exception as e:
+                print(e)
+                print("An Error occurred during Instantiation")
+            return redirect('profile')
+        else:
+            error_string = ' '.join([' '.join(x for x in l) for l in list(self.form.errors.values())])
+            messages.error(request, f'While saving the data to the database the following errors were found: { error_string}')
+            log.error(f'Errors were encountered while saving data for city: { self.city_name } on the database')
+        return self.render(request)
+
+    def get(self, request):
+        self.form = addCityDataForm()
+        return self.render(request)
+
+
+class deleteDataView(LoginRequiredMixin, AddUserToContext, DeleteView):
+    template_name = "interface/delete.html"
+    model = cityData
+    success_url = reverse_lazy('profile')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['type'] = 'city data'
+        return context
+
+
+class deleteInstantiationView(LoginRequiredMixin, AddUserToContext, DeleteView):
+    template_name = "interface/delete.html"
+    model = cityInstantiation
+    success_url = reverse_lazy('profile')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['type'] = 'city instantiation'
+        return context
+
 
 # class deleteDataView(LoginRequiredMixin, AddUserToContext, DeleteView):
 #     template_name = "interface/delete.html"

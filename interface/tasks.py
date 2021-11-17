@@ -6,22 +6,21 @@ from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from anymail.exceptions import AnymailError
 from config.celery import app
-# from .models import simulationParams, campusInstantiation
+from .models import cityInstantiation
 from io import StringIO
 import json
 import pandas as pd
 from django.utils import timezone
 import sys
 import os
-import billiard as multiprocessing
+# import billiard as multiprocessing
 
 ## logging
 import logging
 log = logging.getLogger('celery_log')
 
-## Custom modules taken from submodule
-# from simulator.staticInst.campus_parse_and_instantiate import campus_parse
-# from simulator.staticInst.default_betas import default_betas
+# Custom modules taken from submodule
+from simulator.staticInst.CityGen import *
 
 
 @shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_RETRIES)
@@ -41,3 +40,69 @@ def send_mail(self, recipient, subject, html_message, context, **kwargs):
         message.send()
     except AnymailError as e:
         self.retry(e)
+
+####################
+@app.task()
+def run_instantiate(inputFiles):
+    print("in run_instantiate")
+    ####################
+    #debugging the JSON object must be str, bytes or bytearray, not 'dict' error
+    #################
+    # inputFiles = json.dumps(inputFiles)
+    inputFiles = json.loads(inputFiles)
+    print("run_instantiate_json_loaded")
+    
+    inputFiles['demographics'] = pd.DataFrame.from_dict(inputFiles['demographics'])
+    inputFiles['employment'] = pd.DataFrame.from_dict(inputFiles['employment'])
+    inputFiles['households'] = pd.DataFrame.from_dict(inputFiles['households'])
+    inputFiles['odmatrix'] = pd.DataFrame.from_dict(inputFiles['odmatrix'])
+    print("RIfilesloaded")
+    # try:
+    # individuals, interactionSpace, transCoeff2 =  campus_parse(inputFiles)
+    city = City(inputFiles)
+    print("City generated")
+    population = 100000
+    city.generate(population)
+    individuals, houses, workplaces, schools, wardCentreDistances, commonAreas, fractionPopulations = city.dump_files()
+    print("Dumped instantiated files")
+    # indF = StringIO(json.dumps(individuals, default=convert))
+    # intF = StringIO(json.dumps(interactionSpace, default=convert))
+
+    indF = StringIO(json.dumps(individuals, default=convert))
+    houseF = StringIO(json.dumps(houses, default=convert))
+    workplaceF = StringIO(json.dumps(workplaces, default=convert))
+    schoolF = StringIO(json.dumps(schools, default=convert))
+    wardCentreDistanceF = StringIO(json.dumps(wardCentreDistances, default=convert))
+    commonAreaF = StringIO(json.dumps(commonAreas, default=convert))
+    fractionPopulationF = StringIO(json.dumps(fractionPopulations, default=convert))
+    
+    # campusInstantiation.objects.filter(id=inputFiles['objid'])[0].agent_json.save('individuals.json', File(indF))
+    # campusInstantiation.objects.filter(id=inputFiles['objid'])[0].interaction_spaces_json.save('interaction_spaces.json', File(intF))
+
+    cityInstantiation.objects.filter(id=inputFiles['objid'])[0].individuals_json.save('individuals.json', File(indF))
+    cityInstantiation.objects.filter(id=inputFiles['objid'])[0].houses_json.save('houses.json', File(houseF))
+    cityInstantiation.objects.filter(id=inputFiles['objid'])[0].workplaces_json.save('workplaces.json', File(workplaceF))
+    cityInstantiation.objects.filter(id=inputFiles['objid'])[0].schools_json.save('schools.json', File(schoolF))
+    cityInstantiation.objects.filter(id=inputFiles['objid'])[0].ward_centre_distance_json.save('wardCenterDistance.json', File(wardCentreDistanceF))
+    cityInstantiation.objects.filter(id=inputFiles['objid'])[0].common_area_json.save('commonArea.json', File(commonAreaF))
+    cityInstantiation.objects.filter(id=inputFiles['objid'])[0].fraction_population_json.save('fractionPopulation.json', File(fractionPopulationF))
+
+    print("objects saved")
+
+    cityInstantiation.objects.filter(id=inputFiles['objid']).update(
+        # trans_coeff_file = json.dumps(transCoeff, default=convert),
+        status = 'Complete',
+        created_on = timezone.now()
+    )
+    log.info(f"Instantiaion job {cityInstantiation.objects.filter(id=inputFiles['objid'])[0].inst_name.city_name} was completed successfully.")
+    del individuals, houses, workplaces, schools, wardCentreDistances, commonAreas, fractionPopulations
+    return True
+    # except Exception as e:
+    #     cityInstantiation.objects.filter(id=inputFiles['objid']).update(
+    #         status = 'Error',
+    #         created_on = timezone.now()
+    #     )
+    #     print(e)
+    #     print("Issue with instantiation")
+    #     log.error(f"Instantiaion job {cityInstantiation.objects.filter(id=inputFiles['objid'])[0].inst_name.city_name} terminated abruptly with error {e} at {sys.exc_info()}.")
+    #     return False

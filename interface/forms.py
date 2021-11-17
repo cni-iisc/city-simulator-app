@@ -6,10 +6,11 @@ from django.utils.safestring import mark_safe
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
-from .models import userModel
+from .models import userModel, cityData, cityInstantiation
 from .helper import get_or_none, validate_password
 
 import pandas as pd
+import geopandas as gpd
 
 ## Registration form for new users
 class RegisterForm(forms.Form):
@@ -69,3 +70,34 @@ class EditUserForm(forms.ModelForm):
             'works_at': 'Organization',
         }
 
+## Form to instantiate a new synthetic city in citysim, expects file uploads
+class addCityDataForm(forms.ModelForm):
+    class Meta:
+        model = cityData
+        fields = ('city_name', 'target_population', 'city_geojson', 'demographics_csv', 'city_profile_json', 'households_csv', 'employment_csv', 'odmatrix_csv')
+        labels = {
+            "city_name": mark_safe("Name for the instatiation<br>"),
+            "target_population": mark_safe("Enter city target population<br>"),
+            "city_geojson": mark_safe("This contains ward boundaries of a city.<br> <small>View Sample <a target='_blank' href='/static/sampleData/common_areas.csv'>City geojson file</a></small><br>"),
+            "demographics_csv": mark_safe("This contains demographic data for all wards of the city.<br> <small>View Sample <a target='_blank' href='/static/sampleData/staff.csv'>Demographic detail file</a></small><br>"),
+            "city_profile_json": mark_safe("This contains age, household size and school size distribution for the city.<br> <small>View Sample <a target='_blank' href='/static/sampleData/mess.csv'>City profile file</a></small><br>"),
+            "households_csv": mark_safe("This contains household data for all wards of the city..<br> <small>View Sample <a target='_blank' href='/static/sampleData/timetable.csv'>Household detail file</a></small><br>"),
+            "employment_csv": mark_safe("This contains employment data for all wards of the city.<br> <small>View Sample <a target='_blank' href='/static/sampleData/student.csv'>Employment Detail file</a></small><br>"),
+            "odmatrix_csv": mark_safe("This contains origin-destination matrix illustrating commute distance between wards.<br> <small>View Sample <a target='_blank' href='/static/sampleData/classes.csv'>ODMatrix file</a></small><br>")
+        }
+
+    def clean(self):
+        cleaned_data = super(addCityDataForm, self).clean()
+        if self.cleaned_data.get('city_name') is None:
+            raise ValidationError({"city_name": "The name of the instantiation should not be empty"})
+        # Once Instantiation is done add validations
+        try:
+            city_geojson = gpd.read_file(self.cleaned_data.get('city_geojson'))
+            demographics_csv = pd.read_csv(self.cleaned_data.get('demographics_csv'))
+            city_profile_json = pd.read_json(self.cleaned_data.get('city_profile_json'))
+            households_csv = pd.read_csv(self.cleaned_data.get('households_csv'))
+            employment_csv = pd.read_csv(self.cleaned_data.get('employment_csv'))
+            odmatrix_csv = pd.read_csv(self.cleaned_data.get('odmatrix_csv'))
+        except:
+            raise ValidationError(_("Ensure files uploaded in proper format"))
+        return cleaned_data

@@ -55,36 +55,36 @@ def convert(o):
     raise TypeError
 
 ## Function to validate inputs to create simulation
-def validateFormResponse(formData):
-    for key in formData.keys():
-        ## Transmission coefficients should always be between 0 -- 1
-        if 'beta_' in key and key != 'beta_scale':
-            if not((float(formData[key][0]) >= 0) or (float(formData[key][0]) <=1)):
-                return False
+# def validateFormResponse(formData):
+#     for key in formData.keys():
+#         ## Transmission coefficients should always be between 0 -- 1
+#         if 'beta_' in key and key != 'beta_scale':
+#             if not((float(formData[key][0]) >= 0) or (float(formData[key][0]) <=1)):
+#                 return False
 
-    ## Simulation name should be atleast 2 characters long
-    if len(formData['simulation_name'][0]) < 2:
-        return False
+#     ## Simulation name should be atleast 2 characters long
+#     if len(formData['simulation_name'][0]) < 2:
+#         return False
 
-    ## Num-days to be atleast 1
-    if int(formData['num_days'][0]) < 1:
-        return False
+#     ## Num-days to be atleast 1
+#     if int(formData['num_days'][0]) < 1:
+#         return False
 
-    min_grp_size = int(formData['min_grp_size'][0])
-    max_grp_size = int(formData['max_grp_size'][0])
-    avg_associations =int(formData['avg_associations'][0])
+#     min_grp_size = int(formData['min_grp_size'][0])
+#     max_grp_size = int(formData['max_grp_size'][0])
+#     avg_associations =int(formData['avg_associations'][0])
 
-    if (min_grp_size <= 0) or (min_grp_size >= max_grp_size):
-        return False
-    if (max_grp_size <= 0) or (min_grp_size >= max_grp_size):
-        return False
-    # ## Average number of associates should be atleast 1 and less than 20
-    if (avg_associations <= 0) or (avg_associations >= 20):
-        return False
-    if not((avg_associations > min_grp_size) or (avg_associations < max_grp_size)):
-        return False
+#     if (min_grp_size <= 0) or (min_grp_size >= max_grp_size):
+#         return False
+#     if (max_grp_size <= 0) or (min_grp_size >= max_grp_size):
+#         return False
+#     # ## Average number of associates should be atleast 1 and less than 20
+#     if (avg_associations <= 0) or (avg_associations >= 20):
+#         return False
+#     if not((avg_associations > min_grp_size) or (avg_associations < max_grp_size)):
+#         return False
 
-    ## periodicity == 7
-    if int(formData['periodicity'][0]) != 7:
-        return False
-    return True
+#     ## periodicity == 7
+#     if int(formData['periodicity'][0]) != 7:
+#         return False
+#     return True

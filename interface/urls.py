@@ -35,9 +35,9 @@ urlpatterns = [
     re_path(r'^profile/activity/$', userActivityView.as_view(), name='userActivity'),
     re_path(r'^profile/edit/$', ProfileEditView.as_view(), name='profile_edit'),
 
-    # re_path(r'^campusData/add/$', addDataView.as_view(), name='campusData'),
-    # re_path(r'^campusData/delete/(?P<pk>\d+)/$', deleteDataView.as_view(), name='delCampusData'),
-    # re_path(r'^instantiation/delete/(?P<pk>\d+)/$', deleteInstantiationView.as_view(), name='deleteCampus'),
+    re_path(r'^cityData/add/$', addDataView.as_view(), name='cityData'),
+    re_path(r'^cityData/delete/(?P<pk>\d+)/$', deleteDataView.as_view(), name='delCityData'),
+    re_path(r'^instantiation/delete/(?P<pk>\d+)/$', deleteInstantiationView.as_view(), name='deleteCity'),
 
     # re_path(r'^intervention/create/$', createIntervention.as_view(), name='createIntervention'),
     # re_path(r'^intervention/update/(?P<pk>\d+)/$', updateIntervention.as_view(), name='updateIntervention'),

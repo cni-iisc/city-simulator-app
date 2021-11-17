@@ -1,5 +1,5 @@
 ### Custom IgnoreList ###
-media/campusData
+media/cityData
 media/instantiation
 static/admin
 static/rest_framework
