@@ -13,7 +13,8 @@ import pandas as pd
 from django.utils import timezone
 import sys
 import os
-# import billiard as multiprocessing
+from .models import *
+import billiard as multiprocessing
 
 ## logging
 import logging
@@ -83,7 +84,7 @@ def run_instantiate(inputFiles):
     cityInstantiation.objects.filter(id=inputFiles['objid'])[0].houses_json.save('houses.json', File(houseF))
     cityInstantiation.objects.filter(id=inputFiles['objid'])[0].workplaces_json.save('workplaces.json', File(workplaceF))
     cityInstantiation.objects.filter(id=inputFiles['objid'])[0].schools_json.save('schools.json', File(schoolF))
-    cityInstantiation.objects.filter(id=inputFiles['objid'])[0].ward_centre_distance_json.save('wardCenterDistance.json', File(wardCentreDistanceF))
+    cityInstantiation.objects.filter(id=inputFiles['objid'])[0].ward_centre_distance_json.save('wardCentreDistance.json', File(wardCentreDistanceF))
     cityInstantiation.objects.filter(id=inputFiles['objid'])[0].common_area_json.save('commonArea.json', File(commonAreaF))
     cityInstantiation.objects.filter(id=inputFiles['objid'])[0].fraction_population_json.save('fractionPopulation.json', File(fractionPopulationF))
 
@@ -106,3 +107,51 @@ def run_instantiate(inputFiles):
     #     print("Issue with instantiation")
     #     log.error(f"Instantiaion job {cityInstantiation.objects.filter(id=inputFiles['objid'])[0].inst_name.city_name} terminated abruptly with error {e} at {sys.exc_info()}.")
     #     return False
+
+
+def run_cmd(prgCall):
+    print(prgCall)
+    outName = prgCall[1]
+    if not os.path.exists(outName):
+        os.mkdir(outName)
+    os.system(prgCall[0] + outName)
+
+@app.task()
+def run_simulation(id, dirName):#  , intv_name, enable_testing,
+    print("In Runsimulation")
+    obj = simulationParams.objects.filter(id=id)
+    obj.update(status='Running')
+    obj = obj[0]
+    log.info(f"Simulation job is now running.")#{ obj.simulation_name } 
+    cmd = f"./simulator/cpp-simulator/drive_simulator"
+
+    # if(enable_testing):
+    #     cmd += f" --ENABLE_TESTING  --testing_protocol_filename ./testing_protocol.json"
+
+    cmd += f" --input_directory {dirName} --output_directory "
+
+    list_of_sims = [(cmd , f"{ dirName }/simulationOutputs") for i in range(1)]#range(obj.simulation_iterations){obj.simulation_name.replace(' ', '_')}
+
+    
+
+    pool = multiprocessing.Pool(multiprocessing.cpu_count() - 1)
+    r = pool.map_async(run_cmd, list_of_sims)
+
+    r.wait()
+    try:
+        log.info(f" Running sims for are complete")#{obj.simulation_name } 
+        simulationParams.objects.filter(id=id).update(
+        output_directory=f"{ dirName }/simulationOutputs",#{obj.simulation_name.replace(' ', '_')}
+        status='Complete',
+        completed_at=timezone.now()
+        )
+        # run_aggregate_sims(id)
+        # log.info(f"Simulation job { obj.simulation_name } is complete and the results are aggregated.")
+        return True
+    except Exception as e:
+        simulationParams.objects.filter(id=id).update(
+            status = 'Error',
+            created_on = timezone.now()
+        )
+        log.error(f"Simulation job  terminated abruptly with error {e} at {sys.exc_info()}.")#{ obj.simulation_name }
+        return False

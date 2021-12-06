@@ -11,9 +11,9 @@ import pandas as pd
 import geopandas as gpd
 from django.urls import reverse
 from django.contrib.sites.shortcuts import get_current_site
-from .tasks import send_mail, run_instantiate
+from .tasks import send_mail, run_instantiate, run_simulation
 from .helper import get_activation_url, convert
-from .models import (UserRegisterToken, UserPasswordResetToken, cityInstantiation)
+from .models import (UserRegisterToken, UserPasswordResetToken, cityInstantiation, simulationParams, simulationResults)
 import json
 from django.contrib import messages
 import logging
@@ -107,3 +107,73 @@ def instantiateTask(request):
         print(e)
     return True
 
+
+
+# def updateTransCoeff(cityId, BETA):
+#     transmission_coefficients_json = json.loads(cityInstantiation.objects.get(id=cityId).trans_coeff_file)
+#     for i in range(len(BETA)):
+#         for e in transmission_coefficients_json:
+#            if (e['type'] == BETA[i]['type']):
+#                if e['beta'] != float(BETA[i]['beta']):
+#                     e['beta'] = float(BETA[i]['beta']) #TODO: Add ALPHA parameter when it is available
+
+#     cityInstantiation.objects.filter(id=cityId).update(
+#         trans_coeff_file=json.dumps(
+#             transmission_coefficients_json,
+#             default=convert
+#         )
+#     )
+#     return True
+
+# # def addConfigJSON(obj, outPath):
+# #     testing_capacity = int(obj.testing_capacity)
+
+# #     # configJSON = configCreate(min_group_size, max_group_size, beta_scaling_factor, avg_num_assns, periodicity, minimum_hostel_time, testing_capacity)
+# #     configJSON = configCreate
+# #     f = open(f"{ outPath }/config.json", "w")
+# #     f.write(json.dumps(configJSON))
+# #     f.close()
+# #     return True
+
+
+def launchSimulationTask(request, cityID):#, cityId, BETA
+    print("In Launch Simulation Task")
+    user = request.user
+    obj = simulationParams.get_latest(user=user) #gives id of the object
+    obj = simulationParams.objects.filter(created_by=user, id=obj.id)[0]
+
+    dirName = os.path.splitext(obj.city_instantiation.individuals_json.path)[0]
+    dirName = dirName.rsplit('/', 1)[0]
+    print('This is the instantation directory used')
+    print(dirName)
+    dirName = './media/instantiation/20211203/TestforSimulation3'   #Testing simulation runs
+
+    if not os.path.exists(dirName):
+        print("Given input directory path does not exist")
+        os.mkdir(dirName)
+    
+    print("Simulation Parameters Data Loaded")
+
+    # updateTransCoeff(cityId, BETA)
+
+    # f = open(f"{ dirName }/{ obj.intervention.intv_name }.json", "w")
+    # f.write(json.dumps(json.loads(obj.intervention.intv_json)))
+    # f.close()
+
+
+    # json.dump(json.loads(obj.city_instantiation.trans_coeff_file), open(f"{ dirName }/transmission_coefficients.json", 'w'), default=convert)
+    # json.dump(obj.testing_protocol.testing_protocol_file, open(f"{ dirName }/testing_protocol.json", 'w'), default=convert)
+    # addConfigJSON(obj, dirName)
+
+    simulationParams.objects.filter(created_by=user, id=obj.id).update(status='Queued')
+    print("All working until run_simulation called")
+    print(obj.id)
+    print(dirName)
+    res = run_simulation.apply_async(queue='simQueue', kwargs={'id': obj.id, 'dirName': dirName})#, 'intv_name': obj.intervention.intv_name 
+    # res = run_simulation(obj.id, dirName, obj.enable_testing, obj.intervention.intv_name)
+    if res.get():
+        messages.success(request, f"Simulation job name:  is complete")#{ obj.simulation_name }
+        log.info(f"Simulation job name:  is complete")#{ obj.simulation_name }
+    else:
+        messages.error(request, f"Simulation job name:  has failed. Please check the inputs used.")#{ obj.simulation_name }
+        log.error(f"Simulation job name:  has failed.")#{ obj.simulation_name }

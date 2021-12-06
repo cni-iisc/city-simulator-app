@@ -100,7 +100,7 @@ CELERY_RESULT_BACKEND = 'django-db'
 CELERY_TASK_ROUTES = {
     'interace.tasks.send_mail': 'mailQueue',
     'interface.tasks.run_instantiate': 'instQueue',
-    # 'interface.task.run_simulation': 'simQueue',
+    'interface.task.run_simulation': 'simQueue',
 }
 
 # Anymail: handles sending out email notifications, when configured

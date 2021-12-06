@@ -108,14 +108,14 @@
     var intvArr = [];
     var numDaysArr = [];
     var compProbArr = [];
-    var spaces = []
+    // var spaces = []
 
     //function to validate the inputs and populating the arrays
     function areInputsValid() {
         intvArr = [];
         numDaysArr = [];
         compProbArr = [];
-        spaces = []
+        // spaces = []
 
         for (let i = 0; i < $(".interv-li").length; i++) {
             //get the inputs for each intervention block
@@ -130,16 +130,16 @@
                 intvArr.push(interventionList);
                 numDaysArr.push(parseInt(numDaysVal));
                 compProbArr.push(parseFloat(compProbVal));
-                var checkedSpaces = []
-                if ($("#spaceDiv" + i + "  :checkbox:checked").length > 0) {
-                    $("#spaceDiv" + i + "  :checkbox:checked").each(function () {
-                        checkedSpaces.push(parseInt($(this).val()));
-                    });
-                    spaces.push(checkedSpaces)
-                }
-                else {
-                    spaces.push(checkedSpaces)
-                }
+                // var checkedSpaces = []
+                // if ($("#spaceDiv" + i + "  :checkbox:checked").length > 0) {
+                //     $("#spaceDiv" + i + "  :checkbox:checked").each(function () {
+                //         checkedSpaces.push(parseInt($(this).val()));
+                //     });
+                //     spaces.push(checkedSpaces)
+                // }
+                // else {
+                //     spaces.push(checkedSpaces)
+                // }
             }
             else {
                 alert("Please check inputs are valid for the intervention block, " + i + 1 + "\n1. One or more interventions are selected. \n2. Compliance probability is a value between 0 and 1 . \n3. Number of days for applying the intervention is greater than or equal to 1.");
@@ -156,12 +156,12 @@
         $('select').on('click', function () {
             var selectedOption = $(this).val();
             var eleIdx = $(this).attr('id').match(/\d+/g);
-            if (selectedOption.includes('5')) {
-                $("#spaceDiv" + eleIdx).show()
-            }
-            else {
-                $("#spaceDiv" + eleIdx).hide()
-            }
+            // if (selectedOption.includes('5')) {
+            //     $("#spaceDiv" + eleIdx).show()
+            // }
+            // else {
+            //     $("#spaceDiv" + eleIdx).hide()
+            // }
         })
     });
 

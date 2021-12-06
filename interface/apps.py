@@ -5,9 +5,9 @@ from django.apps import AppConfig
 from django.db.models.signals import post_migrate
 
 ## This method creates user groups if they are not present
-## Campussim defines three user groups
-## 1. user == end users (campus administrators and authorities) of the tool
-## 2. admin == developers of campussim 
+## Citysim defines three user groups
+## 1. user == end users (city administrators and authorities) of the tool
+## 2. admin == developers of citysim 
 def create_user_groups(sender, **kwargs):
     from django.contrib.auth.models import Group
 

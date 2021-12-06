@@ -29,18 +29,18 @@ from .helper import get_or_none, validate_password
 from .mixins import *
 from .models import *
 from .serializers import *
-from .services import (instantiateTask, send_activation_mail, send_forgotten_password_email)
+from .services import (instantiateTask, send_activation_mail, send_forgotten_password_email,launchSimulationTask)
 
-# ## Rest API Endpoints
-# class campusTransCoeffViewSet(viewsets.ModelViewSet):
-#     queryset = campusInstantiation.objects.filter(status='Complete')
-#     serializer_class = campusTransCoeffSerializer
+## Rest API Endpoints
+class cityTransCoeffViewSet(viewsets.ModelViewSet):
+    queryset = cityInstantiation.objects.filter(status='Complete')
+    serializer_class = cityTransCoeffSerializer
 
-# class simResultsViewSet(viewsets.ModelViewSet):
-#     queryset = simulationResults.objects.filter(status='A')
-#     serializer_class = simResultsSerializer
+class simResultsViewSet(viewsets.ModelViewSet):
+    queryset = simulationResults.objects.filter(status='A')
+    serializer_class = simResultsSerializer
 
-# log.info("API end-points are enabled")
+log.info("API end-points are enabled")
 
 def user_activation(request, token):
     token = get_object_or_404(UserRegisterToken, token=token)
@@ -163,14 +163,14 @@ class ProfileView(LoginRequiredMixin, AddUserToContext, TemplateView):
             "last_name": user.last_name,
             "works_at": user.works_at
         }
-        # context['totCampus'] = campusInstantiation.get_count_by_status(user=self.request.user, status='Complete')
-        # context['totIntv'] = interventions.get_count_by(user=self.request.user)
-        # context['totJobs'] = simulationParams.get_count_by(user=self.request.user)
-        # context['running'] = simulationParams.get_count_by_status(user=self.request.user, status='Running')
-        # context['complete'] = simulationParams.get_count_by_status(user=self.request.user, status='Complete')
-        # context['interventions'] = interventions.get_topk_latest(self.request.user, k=3)
+        context['totCity'] = cityInstantiation.get_count_by_status(user=self.request.user, status='Complete')
+        context['totIntv'] = interventions.get_count_by(user=self.request.user)
+        context['totJobs'] = simulationParams.get_count_by(user=self.request.user)
+        context['running'] = simulationParams.get_count_by_status(user=self.request.user, status='Running')
+        context['complete'] = simulationParams.get_count_by_status(user=self.request.user, status='Complete')
+        context['interventions'] = interventions.get_topk_latest(self.request.user, k=3)
         # context['simulations'] = simulationParams.get_topk_latest(self.request.user, k=3)
-        # context['instantiations'] = campusInstantiation.get_topk_latest(self.request.user, k=3)
+        context['instantiations'] = cityInstantiation.get_topk_latest(self.request.user, k=3)
         return context
 
 
@@ -222,9 +222,9 @@ class userActivityView(LoginRequiredMixin, AddUserToContext, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # context['interventions'] = interventions.get_all(self.request.user)
+        context['interventions'] = interventions.get_all(self.request.user)
         # context['simulations'] = simulationParams.get_all(self.request.user)
-        # context['campuses'] = campusData.get_all(self.request.user)
+        context['cities'] = cityData.get_all(self.request.user)
         return context
 
 
@@ -311,6 +311,158 @@ class deleteInstantiationView(LoginRequiredMixin, AddUserToContext, DeleteView):
         context = super().get_context_data(**kwargs)
         context['type'] = 'city instantiation'
         return context
+
+class createIntervention(LoginRequiredMixin, AddUserToContext, TemplateView):
+    template_name = 'interface/create_intervention.html'
+    model = interventions
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context
+
+    def post(self, request):
+        body_unicode = request.body.decode('utf-8')
+        received_json = json.loads(body_unicode)
+        q = interventions(
+            intv_name = received_json['intvName'],
+            intv_json = json.dumps(received_json['intvDict']),
+            created_by = self.request.user,
+            created_on = timezone.now()
+        )
+        q.save()
+        log.info(f"Intervention { received_json['intvName'] } added to the database")
+        return render(request, self.template_name, self.get_context_data())
+
+
+class updateIntervention(LoginRequiredMixin, AddUserToContext, TemplateView):
+    template_name = 'interface/update_intervention.html'
+    model = interventions
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['pk'] = self.kwargs.get('pk')
+        self.obj = interventions.objects.filter(pk=self.kwargs.get('pk')).first()
+        context['intvJSON'] = self.obj.intv_json
+        context['intvName'] = str(self.obj.intv_name)
+        return context
+
+
+    def post(self, request, pk):
+        body_unicode = request.body.decode('utf-8')
+        received_json = json.loads(body_unicode)
+        interventions.objects.filter(pk=pk).update(
+            intv_name = received_json['intvName'],
+            intv_json = json.dumps(received_json['intvDict']),
+            created_by = self.request.user,
+            updated_at = timezone.now()
+        )
+        log.info(f"Intervention id { pk } was updated to { received_json['intvName'] }")
+        return render(request, self.template_name, self.get_context_data())
+
+class deleteInterventionView(LoginRequiredMixin, AddUserToContext, DeleteView):
+    template_name = "interface/delete.html"
+    model = interventions
+    success_url = reverse_lazy('profile')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['type'] = 'intervention'
+        return context
+
+
+
+class createSimulationView(LoginRequiredMixin, AddUserToContext, TemplateView):
+    template_name = 'interface/create_simulation.html'
+    simName = ''
+
+    def get_form_kwargs(self):
+        kwargs = super(createSimulationView, self).get_form_kwargs()
+        kwargs['instance'] = self.request.user
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        city_queryset = cityInstantiation.objects.filter(created_by=self.request.user, status='Complete')
+        intv_queryset = interventions.objects.filter(created_by=self.request.user)
+        context['form'] = createSimulationForm(city_queryset, intv_queryset)
+        return context
+
+    def post(self, request):
+        if request.method == 'POST':
+            print("Post Request called on submit button")
+            formData = dict(request.POST)
+            # # print(validateFormResponse(formData))  #Validate form Response once Simulation Runs are working
+            # # if validateFormResponse(formData):
+            # BETA = []
+            # for key in formData.keys():
+            #     if 'beta_' in key and key != 'beta_scale':
+            #         _, betaType = key.split('_')
+            #         BETA.append({
+            #                 'type': int(betaType),
+            #                 'beta': formData[key][0],
+            #                 'alpha': 1 #TODO: get it from the ajax form
+            #             })
+                
+            #     testing = False
+            #     if formData['enable_testing'][0] == 'on':
+            #         testing = True
+
+            self.simName = formData['simulation_name'][0]
+            print(formData)
+
+            #     try:
+            #         obj = testingParams.objects.get(testing_protocol_name='default')
+            #     except testingParams.DoesNotExist:
+            #         obj = testingParams(
+            #             testing_protocol_name='default',
+            #             testing_protocol_file=json.load(open('./media/testing_protocol_001.json', 'r')),
+            #             created_on=timezone.now()
+            #         )
+            #         obj.save()
+
+            q = simulationParams(
+                simulation_name=self.simName,
+                # days_to_simulate=int(formData['num_days'][0]),
+                # init_infected_seed=int(formData['num_init_infected'][0]),
+                # simulation_iterations=int(formData['num_iterations'][0]),
+                # city_instantiation = cityInstantiation.objects.get(od=int(formData['instantiatedCity'][0])),
+                # intervention = interventions.objects.get(id=int(formData['intvname'][0])),
+                # enable_testing = testing,
+                # testing_capacity=int(formData['testing_capacity'][0]),
+                # testing_protocol=testingParams.objects.get(testing_protocol_name='default'), #By default: the default testing protocol will be aded.
+                # mean_incubation_period = float(formData['mean_incubation_period'][0]),
+                # mean_asymp_presimp_period = float(formData['mean_asymp_presimp_period'][0]),
+                # mean_symp_period = float(formData['mean_symp_period'][0]),
+                # symptomatic_frac = float(formData['symptomatic_frac'][0]),
+                # mean_hospital_stay = int(formData['mean_hospital_stay'][0]),
+                # mean_icu_stay = int(formData['mean_hostel_stay'][0]),
+                created_by=self.request.user,
+                created_on=timezone.now(),
+                status='Created'
+            )
+            q.save()
+            print('Simulation Parameters saved')
+            launchSimulationTask(self.request, int(formData['instantiatedCity'][0]))#, int(formData['instantiatedCity'][0]), BETA
+            messages.info(request, f'Simulation: { self.simName } is created. Please wait while we run the simulation on our servers, typical city instantiations upto 10,000 agents takes about 2 minutes/ iteration.')
+            log.info(f'Simulation: { self.simName } is created')
+            return redirect('profile')
+
+
+
+class deleteSimulationView(LoginRequiredMixin, AddUserToContext, DeleteView):
+    template_name = "interface/delete.html"
+    model = simulationParams
+    success_url = reverse_lazy('profile')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['type'] = 'simulation job'
+        return context
+
+
+
+
+
 
 
 # class deleteDataView(LoginRequiredMixin, AddUserToContext, DeleteView):

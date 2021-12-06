@@ -8,7 +8,7 @@ from .models import *
 ## Adds the models to the Django admin site
 admin.site.register(cityData)
 admin.site.register(cityInstantiation)
-# admin.site.register(interventions)
+admin.site.register(interventions)
 # admin.site.register(testingParams)
 # admin.site.register(simulationParams)
 # admin.site.register(simulationResults)

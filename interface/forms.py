@@ -6,6 +6,8 @@ from django.utils.safestring import mark_safe
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
+# from simulator.staticInst.CityGen import City
+
 from .models import userModel, cityData, cityInstantiation
 from .helper import get_or_none, validate_password
 
@@ -101,3 +103,80 @@ class addCityDataForm(forms.ModelForm):
         except:
             raise ValidationError(_("Ensure files uploaded in proper format"))
         return cleaned_data
+
+
+## Form to specify the parameters for launching a simulation
+class createSimulationForm(forms.Form):
+    simulation_name = forms.CharField(
+        label="Simulation name",
+        initial="city Simulation",
+        required=True,
+    )
+    num_days = forms.IntegerField(
+        label="Number of days to simulate",
+        initial="120",
+        required=True,
+    )#Check if you need Fraction Infected or Num Infected
+    num_init_infected = forms.IntegerField(
+        label="Initial infection value",
+        initial="100",
+        required=True,
+    )
+    num_iterations = forms.IntegerField(
+        label="Number of simulation iterations that will be run for the intervention",
+        initial="10",
+        required=True,
+    )
+    testing_capacity = forms.IntegerField(
+        label = "Testing Capacity",
+        initial = "100",
+        required=True
+    )
+    mean_incubation_period = forms.FloatField(
+        label="Mean Incubation Period",
+        initial="4.58",
+        required=True
+    )
+    mean_asymp_presimp_period = forms.FloatField(
+        label="Mean Asymptomatic or Presymptomatic Period",
+        initial="0.5",
+        required=True
+    )
+    mean_symp_period = forms.FloatField(
+        label="Mean Symptomatic Period",
+        initial="5",
+        required=True
+    )
+    symptomatic_frac = forms.FloatField(
+        label="Symptomatic Fraction",
+        initial="0.67",
+        required=True
+    )
+    mean_hospital_stay = forms.IntegerField(
+        label="mean hospital stay",
+        initial="8",
+        required=True
+    )
+    mean_icu_stay = forms.IntegerField(
+        label="Mean ICU stay",
+        initial="8",
+        required=True
+    )
+
+
+
+    def __init__(self, city_queryset, intv_queryset, *args, **kwargs):
+        super(createSimulationForm, self).__init__(*args, **kwargs)
+        cityChoices = [(city.id, city.inst_name) for city in city_queryset]
+        interventionChoices = [(intv.id, intv.intv_name) for intv in intv_queryset]
+
+        self.fields['instantiatedCity'] = forms.ChoiceField(
+                label = 'Select the city instantiation to run the simulations',
+                choices=cityChoices,
+                required=True,
+            )
+        self.fields['intvName'] = forms.ChoiceField(
+                label = 'Select the intervention to simulate',
+                choices=interventionChoices,
+                required=True,
+            )

@@ -2,20 +2,30 @@
 var intv_code = {
     "0": "No Intervention (business as usual)",
     "1": "Case Isolation",
-    "2": "Class Isolation ",
-    "3": "Shelter in Place (no activity allowed)",
-    "4": "Campus Evacuation",
-    "5": "Custom intervention"
+    "2": "Home Quarantine ",
+    "3": "City Lockdown",
+    "4": "Case isolation and Home Quarantine",
+    "5": "case_isolation_and_home_quarantine_sd_70_plus",
+    "6": "lockdown_fper_ci_hq_sd_70_plus_sper_ci",
+    "7": "lockdown_fper",
+    "8": "ld_fper_ci_hq_sd65_sc_sper_sc_tper",
+    "9": "ld_fper_ci_hq_sd65_sc_sper",
+    "10": "ld_fper_ci_hq_sd65_sc_oe_sper"
 };
 
 //Key-value store to map code to the intervention definiton in the simulator
 var intv_sim_map = {
     "0": "no_intervention",
     "1": "case_isolation",
-    "2": "class_isolation",
+    "2": "home_quarantine",
     "3": "lockdown",
-    "4": "evacuation",
-    "5": "selective_shutdown"
+    "4": "case_isolation_and_home_quarantine",
+    "5": "case_isolation_and_home_quarantine_sd_70_plus",
+    "6": "lockdown_fper_ci_hq_sd_70_plus_sper_ci",
+    "7": "lockdown_fper",
+    "8": "ld_fper_ci_hq_sd65_sc_sper_sc_tper",
+    "9": "ld_fper_ci_hq_sd65_sc_sper",
+    "10": "ld_fper_ci_hq_sd65_sc_oe_sper"
 };
 
 // This is populated based on the interaction space codes in simulator/cpp-simulator/models.h
@@ -62,9 +72,9 @@ function makeInterventionLayout(count, elemId){
         return  $("<option>").text(text).val(value);
     };
 
-    $('<label>', {
-        'for':'spaceList'+elemId
-    }).text("Select the interaction spaces to disable").appendTo(spaceDiv)
+    // $('<label>', {
+    //     'for':'spaceList'+elemId
+    // }).text("Select the interaction spaces to disable").appendTo(spaceDiv)
 
     var select = $('<select>', {
         id: "mulIntv"+elemId,
@@ -118,44 +128,44 @@ function makeInterventionLayout(count, elemId){
     }).appendTo(col3);
 
     //make a div of checkboxes for the interaction space
-    var spaceDiv = $('<div>', {
-        id:"spaceDiv"+elemId,
-    });
-    spaceDiv.hide()
+    // var spaceDiv = $('<div>', {
+    //     id:"spaceDiv"+elemId,
+    // });
+    // spaceDiv.hide()
 
-    $('<label>', {
-        'for':'spaceList'+elemId
-    }).text("Select the interaction spaces to disable").appendTo(spaceDiv)
+    // $('<label>', {
+    //     'for':'spaceList'+elemId
+    // }).text("Select the interaction spaces to disable").appendTo(spaceDiv)
 
-    var spaceList = $('<ul>', {
-        id: 'spaceList'+elemId,
-        'class': 'checkboxes'
-    })
+    // var spaceList = $('<ul>', {
+    //     id: 'spaceList'+elemId,
+    //     'class': 'checkboxes'
+    // })
 
     //make the checboxes for each interaction space
-    const createCheckbox = (value, text) => {
-        var spaceli = $('<li>')
-        $('<input>', {
-            id:"space" + value,
-            'type': 'checkbox',
-            'value': value,
-            'name': 'interaction_space_box',
-        }).appendTo(spaceli)
+    // const createCheckbox = (value, text) => {
+    //     var spaceli = $('<li>')
+    //     $('<input>', {
+    //         id:"space" + value,
+    //         'type': 'checkbox',
+    //         'value': value,
+    //         'name': 'interaction_space_box',
+    //     }).appendTo(spaceli)
 
-        $("<label>", {
-            'for': "space" + String(value),
-        }).text(text).appendTo(spaceli);
+    //     $("<label>", {
+    //         'for': "space" + String(value),
+    //     }).text(text).appendTo(spaceli);
 
-        return spaceli
-    };
+    //     return spaceli
+    // };
 
-    for (let code in interaction_space_map){
-        spaceList.append(createCheckbox(code, interaction_space_map[code]))
-    }
+    // for (let code in interaction_space_map){
+    //     spaceList.append(createCheckbox(code, interaction_space_map[code]))
+    // }
 
-    spaceList.appendTo(spaceDiv)
+    // spaceList.appendTo(spaceDiv)
     select.appendTo(col1)
-    spaceDiv.appendTo(col1)
+    // spaceDiv.appendTo(col1)
     col1.appendTo(liDiv)
     col2.appendTo(liDiv)
     col3.appendTo(liDiv)
@@ -190,11 +200,11 @@ function intervention_json_gen(intv, complaince_probability, num_days, spaces) {
                             console.log(spaces[j])
                             intv_json_const[[intv_sim_map[String(intv[j][i])]]] = {
                                 "active" : true,
-                                "spaces": []
+                                // "spaces": []
                             }
-                            for(let e in spaces[j]){
-                                intv_json_const[[intv_sim_map[String(intv[j][i])]]]['spaces'].push(parseInt(spaces[j][e]));
-                            }
+                            // for(let e in spaces[j]){
+                            //     intv_json_const[[intv_sim_map[String(intv[j][i])]]]['spaces'].push(parseInt(spaces[j][e]));
+                            // }
                         }
                         else{
                             intv_json_const[[intv_sim_map[String(intv[j][i])]]] = {

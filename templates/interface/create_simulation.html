@@ -43,49 +43,47 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
   <script>
-    $("#id_instantiatedCity").on('rightnow change',function(){
-        $("input[name*='beta_']").each(function(){
-                $("#"+this.id).prev("label").remove(); //remove the  label tag for the input tag id
-                $("#"+this.id).remove(); //remove the input tag
-            });
+    // $("#id_instantiatedCity").on('rightnow change',function(){
+    //     $("input[name*='beta_']").each(function(){
+    //             $("#"+this.id).prev("label").remove(); //remove the  label tag for the input tag id
+    //             $("#"+this.id).remove(); //remove the input tag
+    //         });
 
-        cityName = $(this).val();
+    //     cityName = $(this).val();
 
-        console.log(cityName);
-        if(cityName != ''){
-            $.get("/api/city/"+ cityName +"/", function( data ) {
-                console.log(data)
-                transCoeffFile = JSON.parse(data['trans_coeff_file']);
-                console.log(transCoeffFile)
-            for(var i=0; i<transCoeffFile.length; i++){
-                var element = transCoeffFile[i];
-                if(element['name'] != 'Day Scholar'){
-                    var formDiv = $('<div>')
-                    formDiv.attr({
-                        class: 'form-row'
-                    })
+    //     console.log(cityName);
+    //     if(cityName != ''){
+    //         $.get("/api/city/"+ cityName +"/", function( data ) {
+    //             console.log(data)
+    //             transCoeffFile = JSON.parse(data['trans_coeff_file']);
+    //             console.log(transCoeffFile)
+    //         for(var i=0; i<transCoeffFile.length; i++){
+    //             var element = transCoeffFile[i];
+    //             var formDiv = $('<div>')
+    //             formDiv.attr({
+    //                 class: 'form-row'
+    //             })
 
-                    $('<label>').attr({
-                        class:"col-8 form-label",
-                        for:"id_"+ element['type']
-                    }).append("Transmission Coefficients for " + element['name'] + " interaction space").appendTo(formDiv)
+    //             $('<label>').attr({
+    //                 class:"col-8 form-label",
+    //                 for:"id_"+ element['type']
+    //             }).append("Transmission Coefficients for " + element['name'] + " interaction space").appendTo(formDiv)
 
-                    var input = $('<input>').attr({
-                        type: 'text',
-                        required: true,
-                        id: 'id_'+element['type'],
-                        name: 'beta_'+element['type'],
-                        value: element['beta']
-                    }).appendTo(formDiv);
+    //             var input = $('<input>').attr({
+    //                 type: 'text',
+    //                 required: true,
+    //                 id: 'id_'+element['type'],
+    //                 name: 'beta_'+element['type'],
+    //                 value: element['beta']
+    //             }).appendTo(formDiv);
 
-                    formDiv.appendTo('#formContainer');
-                }
-            }
+    //             formDiv.appendTo('#formContainer');
+    //         }
 
-            });
-        }
+    //         });
+    //     }
 
-    }).trigger('rightnow');
+    // }).trigger('rightnow');
 </script>
 
 {% endblock %}

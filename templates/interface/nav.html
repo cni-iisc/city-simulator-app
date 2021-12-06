@@ -15,11 +15,11 @@
         <i class="fas fa-building fa-fw me-3"></i>
         <span>Instantiate City</span>
       </a>
-			<a href="" class="list-group-item list-group-item-action py-2 ripple">
+			<a href="{% url 'createIntervention' %}" class="list-group-item list-group-item-action py-2 ripple">
         <i class="fas fa-lock fa-fw me-3"></i>
         <span>Create Intervention</span>
       </a>
-			<a href="" class="list-group-item list-group-item-action py-2 ripple">
+			<a href="{% url 'createSimulation' %}" class="list-group-item list-group-item-action py-2 ripple">
         <i class="fas fa-calculator fa-fw me-3"></i>
         <span>Create Simulation</span>
       </a>
@@ -36,7 +36,7 @@
 			<a href="#" class="list-group-item list-group-item-action py-2 ripple active  dropdown-toggle" data-mdb-toggle="dropdown" id="navbarAPIMenuLink" aria-expanded="false">
 			<i class=" fas fa-broadcast-tower fa-fw me-3"></i><span>APIs</span> </a>
 			<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarAPIMenuLink">
-				<li><a class="dropdown-item" href="/api/campus/" target="blank">Get Transmission Coefficients</a></li>
+				<li><a class="dropdown-item" href="/api/city/" target="blank">Get Transmission Coefficients</a></li>
 				<li><a class="dropdown-item" href="/api/sim/" target="blank">Get Simluation Results</a></li>
 			</ul>
 			{% endif %}

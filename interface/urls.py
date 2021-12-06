@@ -39,12 +39,12 @@ urlpatterns = [
     re_path(r'^cityData/delete/(?P<pk>\d+)/$', deleteDataView.as_view(), name='delCityData'),
     re_path(r'^instantiation/delete/(?P<pk>\d+)/$', deleteInstantiationView.as_view(), name='deleteCity'),
 
-    # re_path(r'^intervention/create/$', createIntervention.as_view(), name='createIntervention'),
-    # re_path(r'^intervention/update/(?P<pk>\d+)/$', updateIntervention.as_view(), name='updateIntervention'),
-    # re_path(r'^intervention/delete/(?P<pk>\d+)/$', deleteInterventionView.as_view(), name='deleteIntervention'),
+    re_path(r'^intervention/create/$', createIntervention.as_view(), name='createIntervention'),
+    re_path(r'^intervention/update/(?P<pk>\d+)/$', updateIntervention.as_view(), name='updateIntervention'),
+    re_path(r'^intervention/delete/(?P<pk>\d+)/$', deleteInterventionView.as_view(), name='deleteIntervention'),
 
-    # re_path(r'^simulation/create/$', createSimulationView.as_view(), name='createSimulation'),
-    # re_path(r'^simulation/delete/(?P<pk>\d+)/$', deleteSimulationView.as_view(), name='deleteSimulation'),
+    re_path(r'^simulation/create/$', createSimulationView.as_view(), name='createSimulation'),
+    re_path(r'^simulation/delete/(?P<pk>\d+)/$', deleteSimulationView.as_view(), name='deleteSimulation'),
     # re_path(r'^simulation/view/(?P<pk>\d+)/$', viewSimulationView.as_view(), name='viewSimulation'),
     # re_path(r'^simulation/render/(?P<pk>\d+)/$', visualizeSingleSimulation.as_view(), name='visualizeSimulation'),
     # re_path(r'^simulation/fetch/(?P<pk>\d+)/$', sim_result_rest, name='rest_sim_result'),
