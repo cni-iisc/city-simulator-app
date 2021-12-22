@@ -403,9 +403,9 @@ class createSimulationView(LoginRequiredMixin, AddUserToContext, TemplateView):
             #                 'alpha': 1 #TODO: get it from the ajax form
             #             })
                 
-            #     testing = False
-            #     if formData['enable_testing'][0] == 'on':
-            #         testing = True
+            testing = False
+            if formData['enable_testing'][0] == 'on':
+                testing = True
 
             self.simName = formData['simulation_name'][0]
             print(formData)
@@ -415,39 +415,50 @@ class createSimulationView(LoginRequiredMixin, AddUserToContext, TemplateView):
             #     except testingParams.DoesNotExist:
             #         obj = testingParams(
             #             testing_protocol_name='default',
-            #             testing_protocol_file=json.load(open('./media/testing_protocol_001.json', 'r')),
+            #             testing_protocol_file=json.load(open('./media/testing_protocol_002.json', 'r')),
             #             created_on=timezone.now()
             #         )
             #         obj.save()
-
-            q = simulationParams(
-                simulation_name=self.simName,
-                # days_to_simulate=int(formData['num_days'][0]),
-                # init_infected_seed=int(formData['num_init_infected'][0]),
-                # simulation_iterations=int(formData['num_iterations'][0]),
-                # city_instantiation = cityInstantiation.objects.get(od=int(formData['instantiatedCity'][0])),
-                # intervention = interventions.objects.get(id=int(formData['intvname'][0])),
-                # enable_testing = testing,
-                # testing_capacity=int(formData['testing_capacity'][0]),
-                # testing_protocol=testingParams.objects.get(testing_protocol_name='default'), #By default: the default testing protocol will be aded.
-                # mean_incubation_period = float(formData['mean_incubation_period'][0]),
-                # mean_asymp_presimp_period = float(formData['mean_asymp_presimp_period'][0]),
-                # mean_symp_period = float(formData['mean_symp_period'][0]),
-                # symptomatic_frac = float(formData['symptomatic_frac'][0]),
-                # mean_hospital_stay = int(formData['mean_hospital_stay'][0]),
-                # mean_icu_stay = int(formData['mean_hostel_stay'][0]),
-                created_by=self.request.user,
-                created_on=timezone.now(),
-                status='Created'
-            )
+            try:
+                q = simulationParams(
+                    simulation_name=self.simName,
+                    days_to_simulate=int(formData['num_days'][0]),
+                    init_infected_seed=int(formData['num_init_infected'][0]),
+                    simulation_iterations=int(formData['num_iterations'][0]),
+                    city_instantiation = cityInstantiation.objects.get(id=int(formData['instantiatedCity'][0])),
+                    intervention = interventions.objects.get(id=int(formData['intvName'][0])),
+                    enable_testing = testing,
+                    testing_capacity=int(formData['testing_capacity'][0]),  
+                    # testing_protocol=testingParams.objects.get(testing_protocol_name='default'), #By default: the default testing protocol will be aded.
+                    mean_incubation_period = float(formData['mean_incubation_period'][0]),
+                    mean_asymp_presimp_period = float(formData['mean_asymp_presimp_period'][0]),
+                    mean_symp_period = float(formData['mean_symp_period'][0]),
+                    symptomatic_frac = float(formData['symptomatic_frac'][0]),
+                    mean_hospital_stay = int(formData['mean_hospital_stay'][0]),
+                    mean_icu_stay = int(formData['mean_icu_stay'][0]),
+                    created_by=self.request.user,
+                    created_on=timezone.now(),
+                    status='Created'
+                )
+            except:
+                messages.error(request, f'One or more fields in the create simulation for simulation name: { self.simName } was incorrect. We have reset the form to default values, please setup at least 1 city instantiation and intervention')
+                log.error(f'One or more fields in the create simulation for simulation name:{ self.simName } was incorrect.')
+                return render(request, self.template_name, self.get_context_data())
             q.save()
             print('Simulation Parameters saved')
-            launchSimulationTask(self.request, int(formData['instantiatedCity'][0]))#, int(formData['instantiatedCity'][0]), BETA
-            messages.info(request, f'Simulation: { self.simName } is created. Please wait while we run the simulation on our servers, typical city instantiations upto 10,000 agents takes about 2 minutes/ iteration.')
+            launchSimulationTask(self.request, int(formData['instantiatedCity'][0]))#, BETA
+            messages.info(request, f'Simulation: { self.simName } is created. Please wait while we run the simulation on our servers, typical city instantiations upto 10,000 agents takes about 3 minutes/ iteration.')
             log.info(f'Simulation: { self.simName } is created')
             return redirect('profile')
 
+class viewSimulationView(LoginRequiredMixin, AddUserToContext, DetailView):
+    template_name = "interface/view_simulation.html"
+    model = simulationParams
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # context['betas'] = json.loads(simulationParams.objects.filter(pk=self.kwargs.get('pk'))[0].city_instantiation.trans_coeff_file)
+        return context
 
 class deleteSimulationView(LoginRequiredMixin, AddUserToContext, DeleteView):
     template_name = "interface/delete.html"

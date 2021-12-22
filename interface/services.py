@@ -144,9 +144,8 @@ def launchSimulationTask(request, cityID):#, cityId, BETA
 
     dirName = os.path.splitext(obj.city_instantiation.individuals_json.path)[0]
     dirName = dirName.rsplit('/', 1)[0]
-    print('This is the instantation directory used')
     print(dirName)
-    dirName = './media/instantiation/20211203/TestforSimulation3'   #Testing simulation runs
+    # dirName = './media/instantiation/20211210/TestforSimulation6'   #Testing simulation runs
 
     if not os.path.exists(dirName):
         print("Given input directory path does not exist")
@@ -156,9 +155,9 @@ def launchSimulationTask(request, cityID):#, cityId, BETA
 
     # updateTransCoeff(cityId, BETA)
 
-    # f = open(f"{ dirName }/{ obj.intervention.intv_name }.json", "w")
-    # f.write(json.dumps(json.loads(obj.intervention.intv_json)))
-    # f.close()
+    f = open(f"{ dirName }/{ obj.intervention.intv_name }.json", "w")
+    f.write(json.dumps(json.loads(obj.intervention.intv_json)))
+    f.close()
 
 
     # json.dump(json.loads(obj.city_instantiation.trans_coeff_file), open(f"{ dirName }/transmission_coefficients.json", 'w'), default=convert)
@@ -167,13 +166,11 @@ def launchSimulationTask(request, cityID):#, cityId, BETA
 
     simulationParams.objects.filter(created_by=user, id=obj.id).update(status='Queued')
     print("All working until run_simulation called")
-    print(obj.id)
-    print(dirName)
-    res = run_simulation.apply_async(queue='simQueue', kwargs={'id': obj.id, 'dirName': dirName})#, 'intv_name': obj.intervention.intv_name 
+    res = run_simulation.apply_async(queue='simQueue', kwargs={'id': obj.id, 'dirName': dirName, 'intv_name': obj.intervention.intv_name})
     # res = run_simulation(obj.id, dirName, obj.enable_testing, obj.intervention.intv_name)
-    if res.get():
-        messages.success(request, f"Simulation job name:  is complete")#{ obj.simulation_name }
-        log.info(f"Simulation job name:  is complete")#{ obj.simulation_name }
-    else:
-        messages.error(request, f"Simulation job name:  has failed. Please check the inputs used.")#{ obj.simulation_name }
-        log.error(f"Simulation job name:  has failed.")#{ obj.simulation_name }
+    # if res.get():
+    #     messages.success(request, f"Simulation job name:  is complete")#{ obj.simulation_name }
+    #     log.info(f"Simulation job name:  is complete")#{ obj.simulation_name }
+    # else:
+    #     messages.error(request, f"Simulation job name:  has failed. Please check the inputs used.")#{ obj.simulation_name }
+    #     log.error(f"Simulation job name:  has failed.")#{ obj.simulation_name }

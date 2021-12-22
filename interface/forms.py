@@ -127,6 +127,10 @@ class createSimulationForm(forms.Form):
         initial="10",
         required=True,
     )
+    enable_testing = forms.BooleanField(
+        label="Enable testing in the simulation?",
+        initial=True,
+    )
     testing_capacity = forms.IntegerField(
         label = "Testing Capacity",
         initial = "100",

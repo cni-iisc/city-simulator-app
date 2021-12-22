@@ -10,8 +10,8 @@ admin.site.register(cityData)
 admin.site.register(cityInstantiation)
 admin.site.register(interventions)
 # admin.site.register(testingParams)
-# admin.site.register(simulationParams)
-# admin.site.register(simulationResults)
+admin.site.register(simulationParams)
+admin.site.register(simulationResults)
 
 ## This defines the behaviors for the fields defined in the user model
 @admin.register(userModel)

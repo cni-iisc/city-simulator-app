@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from .helper import  convert
+from .helper import  convert, run_aggregate_sims
 from django.core.files import File
 from celery import shared_task
 from django.core.mail import EmailMultiAlternatives
@@ -117,21 +117,21 @@ def run_cmd(prgCall):
     os.system(prgCall[0] + outName)
 
 @app.task()
-def run_simulation(id, dirName):#  , intv_name, enable_testing,
+def run_simulation(id, dirName, intv_name):#  , enable_testing,
     print("In Runsimulation")
     obj = simulationParams.objects.filter(id=id)
     obj.update(status='Running')
     obj = obj[0]
-    log.info(f"Simulation job is now running.")#{ obj.simulation_name } 
-    cmd = f"./simulator/cpp-simulator/drive_simulator"
+    log.info(f"Simulation job { obj.simulation_name } is now running.")
+    cmd = f"./simulator/cpp-simulator/drive_simulator --SEED_FIXED_NUMBER --INIT_FIXED_NUMBER_INFECTED { obj.init_infected_seed } --NUM_DAYS {obj.days_to_simulate}"
 
     # if(enable_testing):
     #     cmd += f" --ENABLE_TESTING  --testing_protocol_filename ./testing_protocol.json"
 
     cmd += f" --input_directory {dirName} --output_directory "
 
-    list_of_sims = [(cmd , f"{ dirName }/simulationOutputs") for i in range(1)]#range(obj.simulation_iterations){obj.simulation_name.replace(' ', '_')}
-
+    # list_of_sims = [(cmd , f"{ dirName }/simulationOutputs") for i in range(1)]#range(obj.simulation_iterations){obj.simulation_name.replace(' ', '_')}
+    list_of_sims = [(cmd , f"{ dirName }/{obj.simulation_name.replace(' ', '_')}_{ intv_name }_id_{ i }") for i in range(1)]
     
 
     pool = multiprocessing.Pool(multiprocessing.cpu_count() - 1)
@@ -139,9 +139,10 @@ def run_simulation(id, dirName):#  , intv_name, enable_testing,
 
     r.wait()
     try:
-        log.info(f" Running sims for are complete")#{obj.simulation_name } 
+        log.info(f" Running sims for {obj.simulation_name } are complete")
         simulationParams.objects.filter(id=id).update(
-        output_directory=f"{ dirName }/simulationOutputs",#{obj.simulation_name.replace(' ', '_')}
+        # output_directory=f"{ dirName }/simulationOutputs",#{obj.simulation_name.replace(' ', '_')}
+        output_directory=f"{ dirName }/{obj.simulation_name.replace(' ', '_')}_{ intv_name }",
         status='Complete',
         completed_at=timezone.now()
         )
