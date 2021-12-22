@@ -131,7 +131,7 @@ def run_simulation(id, dirName, intv_name):#  , enable_testing,
     cmd += f" --input_directory {dirName} --output_directory "
 
     # list_of_sims = [(cmd , f"{ dirName }/simulationOutputs") for i in range(1)]#range(obj.simulation_iterations){obj.simulation_name.replace(' ', '_')}
-    list_of_sims = [(cmd , f"{ dirName }/{obj.simulation_name.replace(' ', '_')}_{ intv_name }_id_{ i }") for i in range(1)]
+    list_of_sims = [(cmd , f"{ dirName }/{obj.simulation_name.replace(' ', '_')}_{ intv_name }_id_{ i }") for i in range(obj.simulation_iterations)]
     
 
     pool = multiprocessing.Pool(multiprocessing.cpu_count() - 1)
@@ -146,8 +146,8 @@ def run_simulation(id, dirName, intv_name):#  , enable_testing,
         status='Complete',
         completed_at=timezone.now()
         )
-        # run_aggregate_sims(id)
-        # log.info(f"Simulation job { obj.simulation_name } is complete and the results are aggregated.")
+        run_aggregate_sims(id)
+        log.info(f"Simulation job { obj.simulation_name } is complete and the results are aggregated.")
         return True
     except Exception as e:
         simulationParams.objects.filter(id=id).update(

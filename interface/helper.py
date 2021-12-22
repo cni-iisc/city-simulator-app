@@ -106,11 +106,11 @@ def run_aggregate_sims(simPK):
 
     #aggregate across runs
     for i in range(num_iterations):
-        affected = pd.concat([affected, pd.read_csv(f"{ dirName }/num_affected.csv")], ignore_index=True)
-        cases = pd.concat([cases, pd.read_csv(f"{ dirName }/num_cases.csv")], ignore_index=True)
-        fatalities = pd.concat([fatalities, pd.read_csv(f"{ dirName }/num_fatalities.csv")], ignore_index=True)
-        recovered = pd.concat([recovered, pd.read_csv(f"{ dirName }/num_recovered.csv")], ignore_index=True)
-        disease_label_stats = pd.concat([disease_label_stats, pd.read_csv(f"{ dirName }/disease_label_stats.csv")], ignore_index=True)
+        affected = pd.concat([affected, pd.read_csv(f"{ dirName }_id_{ i }/num_affected.csv")], ignore_index=True)
+        cases = pd.concat([cases, pd.read_csv(f"{ dirName }_id_{ i }/num_cases.csv")], ignore_index=True)
+        fatalities = pd.concat([fatalities, pd.read_csv(f"{ dirName }_id_{ i }/num_fatalities.csv")], ignore_index=True)
+        recovered = pd.concat([recovered, pd.read_csv(f"{ dirName }_id_{ i }/num_recovered.csv")], ignore_index=True)
+        disease_label_stats = pd.concat([disease_label_stats, pd.read_csv(f"{ dirName }_id_{ i }/disease_label_stats.csv")], ignore_index=True)
 
     # Added by Prashanth and Nihesh to fix plotting issues...
     num_days = int(len(affected)/(num_iterations*4))
@@ -138,8 +138,8 @@ def run_aggregate_sims(simPK):
 
     # fatalities["daily_fatalities"] = fatalities["num_fatalities"].diff().fillna(0)
     # recovered["daily_recovered"] = recovered["num_recovered"].diff().fillna(0)
-    disease_label_stats['cumulative_tests'] = disease_label_stats['people_tested']
-    disease_label_stats['daily_positive_cases'] = disease_label_stats['cumulative_positive_cases'].diff().fillna(0)
+    # disease_label_stats['cumulative_tests'] = disease_label_stats['people_tested']
+    # disease_label_stats['daily_positive_cases'] = disease_label_stats['cumulative_positive_cases'].diff().fillna(0)
     
 
     # Added by Prashanth and Nihesh to fix plotting issues...
@@ -152,7 +152,7 @@ def run_aggregate_sims(simPK):
     # fatalities["daily_fatalities"] = daily_fatalities
     # recovered['daily_recovered'] = daily_recovered
     
-    disease_label_stats['daily_positive_cases'][disease_label_stats['daily_positive_cases']<0]=0
+    # disease_label_stats['daily_positive_cases'][disease_label_stats['daily_positive_cases']<0]=0
     
 
     #aggregate the data
@@ -164,8 +164,8 @@ def run_aggregate_sims(simPK):
     fatalities.columns = ['_'.join(filter(None, col)).strip() for col in fatalities.columns.values]
     recovered = recovered_day.groupby(by=['Time']).agg(['std', 'mean']).reset_index()
     recovered.columns = ['_'.join(filter(None, col)).strip() for col in recovered.columns.values]
-    disease_label_stats = disease_label_stats.groupby(by=['Time']).agg(['std', 'mean']).reset_index()
-    disease_label_stats.columns = ['_'.join(filter(None, col)).strip() for col in disease_label_stats.columns.values]
+    # disease_label_stats = disease_label_stats.groupby(by=['Time']).agg(['std', 'mean']).reset_index()
+    # disease_label_stats.columns = ['_'.join(filter(None, col)).strip() for col in disease_label_stats.columns.values]
 
 
     #aggregate the data
@@ -200,14 +200,6 @@ def run_aggregate_sims(simPK):
                     "std": fatalities['daily_fatalities_std'].values.tolist()
                     
                 },
-                "positive_cases":{
-                    "mean": disease_label_stats['daily_positive_cases_mean'].values.tolist(),
-                    "std": disease_label_stats['daily_positive_cases_std'].values.tolist()
-                },
-                "people_tested":{
-                    "mean": disease_label_stats['requested_tests_mean'].values.tolist(),
-                    "std": disease_label_stats['requested_tests_std'].values.tolist()
-                },
         },
         "cumulative": {
 
@@ -222,14 +214,6 @@ def run_aggregate_sims(simPK):
                     "fatalities":{
                         "mean": fatalities['num_fatalities_mean'].values.tolist(),
                         "std": fatalities['num_fatalities_std'].values.tolist()
-                    },
-                    "positive_cases":{
-                        "mean": disease_label_stats['cumulative_positive_cases_mean'].values.tolist(),
-                        "std": disease_label_stats['cumulative_positive_cases_std'].values.tolist()
-                    },
-                    "people_tested":{
-                        "mean": disease_label_stats['cumulative_tests_mean'].values.tolist(),
-                        "std": disease_label_stats['cumulative_tests_std'].values.tolist()
                     },
         },
     }
