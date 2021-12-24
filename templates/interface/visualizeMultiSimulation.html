@@ -8,7 +8,7 @@
   <div class="col-sm-2">
     <select multiple="multiple" size="10" name="simulation" id="simulation">
     {% for w in results %}
-    <option value="{{ w.id }}">{{ w.name }} {{ w.city }} {{ w.intv }}</option>
+    <option value="{{ w.id }}">{{ w.name }} {{ w.campus }} {{ w.intv }}</option>
     {% endfor %}
     </select>
 
@@ -49,7 +49,18 @@
   $("#submitBtn").click(function () {
       $("#target").empty();
       var simulation = $("#simulation").val();
-
+      var plotlegendid = parseInt(simulation[0])
+      var plotid=[]
+      console.log(simulation.length)
+      for(let m=0; m<simulation.length;m++){
+        for(let k=0; k <x_data.length; k++){
+          if(x_data[k]['id'] == simulation[m])
+          {
+            plotid.push(k)
+          }
+        }
+      }
+      var legendIterator = 0;
       var plotOption = '';
       $.each($("input[name='inlineRadioOptions']:checked"), function () {
             plotOption = $(this).val();
@@ -59,10 +70,11 @@
       $.each($("input[name='plot']:checked"), function () {
         options.push($(this).val());
       });
+      var color_list_plots = [[255, 0, 0],[0,255, 0],[0, 0,255],[255,255, 0],[0,255,255],[0,255,255],[0,0,128],[0,128,128],[128,0,128],[0,128,0],[0, 0, 0],[128,128,0]]
 
       for (let i = 0; i < parseInt(options.length); i++) {
         var traceList = []
-
+        legendIterator =0;
         for(var j=0; j<simulation.length; j++){
           var data = $.ajax({type: "GET", url: "/api/sim/"+ simulation[j] +"/", async: false}).responseJSON;
           var mean_plus_std = data['agg_results'][plotOption][options[i]].mean.map(function (num, idx) {
@@ -70,11 +82,15 @@
                     });
 
           var mean_minus_std = data['agg_results'][plotOption][options[i]].mean.map(function (num, idx) {
-              return num - data['agg_results'][plotOption][options[i]].std[idx];
+              var min_floor_zero = num - data['agg_results'][plotOption][options[i]].std[idx];
+              if(min_floor_zero < 0){
+                min_floor_zero = 0;
+              }
+              return min_floor_zero;
             });
-          traceList.push(makeTraceTriplets(data['agg_results'].time, data['agg_results'][plotOption][options[i]].mean, mean_plus_std, mean_minus_std, options[i], intervention=x_data['intervention']))
+          traceList.push(makeTraceTriplets(data['agg_results'].time, data['agg_results'][plotOption][options[i]].mean, mean_plus_std, mean_minus_std, options[i], color_list_plots[legendIterator], intervention=x_data[plotid[legendIterator%(color_list_plots.length)]]['intv']));
+          legendIterator++;
           }
-
           var title = ""
           if (plotOption == 'daily'){
             title  = "Daily new positive " + options[i] + " ";}
@@ -83,7 +99,7 @@
           }
           console.log(traceList.length)
           console.log(traceList)
-
+          
           traceList = [].concat.apply([], traceList);
           // console.log(traceList.length)
           // console.log(traceList)
