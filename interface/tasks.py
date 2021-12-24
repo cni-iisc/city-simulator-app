@@ -124,7 +124,7 @@ def run_simulation(id, dirName, intv_name):#  , enable_testing,
     obj.update(status='Running')
     obj = obj[0]
     log.info(f"Simulation job { obj.simulation_name } is now running.")
-    cmd = f"./simulator/cpp-simulator/drive_simulator --SEED_FIXED_NUMBER --INIT_FIXED_NUMBER_INFECTED { obj.init_infected_seed } --NUM_DAYS {obj.days_to_simulate}"
+    cmd = f"./simulator/cpp-simulator/drive_simulator --SEED_FIXED_NUMBER --INIT_FIXED_NUMBER_INFECTED { obj.init_infected_seed } --NUM_DAYS {obj.days_to_simulate} --intervention_filename ./{intv_name}.json"
 
     # if(enable_testing):
     #     cmd += f" --ENABLE_TESTING  --testing_protocol_filename ./testing_protocol.json"
