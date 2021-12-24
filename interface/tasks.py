@@ -6,7 +6,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from anymail.exceptions import AnymailError
 from config.celery import app
-from .models import cityInstantiation
+from .models import cityInstantiation, simulationParams
 from io import StringIO
 import json
 import pandas as pd
@@ -60,53 +60,54 @@ def run_instantiate(inputFiles):
     print("RIfilesloaded")
     # try:
     # individuals, interactionSpace, transCoeff2 =  campus_parse(inputFiles)
-    city = City(inputFiles)
-    print("City generated")
-    population = 100000
-    city.generate(population)
-    individuals, houses, workplaces, schools, wardCentreDistances, commonAreas, fractionPopulations = city.dump_files()
-    print("Dumped instantiated files")
-    # indF = StringIO(json.dumps(individuals, default=convert))
-    # intF = StringIO(json.dumps(interactionSpace, default=convert))
+    try:
+        city = City(inputFiles)
+        print("City generated")
+        population = 100000
+        city.generate(population)
+        individuals, houses, workplaces, schools, wardCentreDistances, commonAreas, fractionPopulations = city.dump_files()
+        print("Dumped instantiated files")
+        # indF = StringIO(json.dumps(individuals, default=convert))
+        # intF = StringIO(json.dumps(interactionSpace, default=convert))
 
-    indF = StringIO(json.dumps(individuals, default=convert))
-    houseF = StringIO(json.dumps(houses, default=convert))
-    workplaceF = StringIO(json.dumps(workplaces, default=convert))
-    schoolF = StringIO(json.dumps(schools, default=convert))
-    wardCentreDistanceF = StringIO(json.dumps(wardCentreDistances, default=convert))
-    commonAreaF = StringIO(json.dumps(commonAreas, default=convert))
-    fractionPopulationF = StringIO(json.dumps(fractionPopulations, default=convert))
-    
-    # campusInstantiation.objects.filter(id=inputFiles['objid'])[0].agent_json.save('individuals.json', File(indF))
-    # campusInstantiation.objects.filter(id=inputFiles['objid'])[0].interaction_spaces_json.save('interaction_spaces.json', File(intF))
+        indF = StringIO(json.dumps(individuals, default=convert))
+        houseF = StringIO(json.dumps(houses, default=convert))
+        workplaceF = StringIO(json.dumps(workplaces, default=convert))
+        schoolF = StringIO(json.dumps(schools, default=convert))
+        wardCentreDistanceF = StringIO(json.dumps(wardCentreDistances, default=convert))
+        commonAreaF = StringIO(json.dumps(commonAreas, default=convert))
+        fractionPopulationF = StringIO(json.dumps(fractionPopulations, default=convert))
+        
+        # campusInstantiation.objects.filter(id=inputFiles['objid'])[0].agent_json.save('individuals.json', File(indF))
+        # campusInstantiation.objects.filter(id=inputFiles['objid'])[0].interaction_spaces_json.save('interaction_spaces.json', File(intF))
 
-    cityInstantiation.objects.filter(id=inputFiles['objid'])[0].individuals_json.save('individuals.json', File(indF))
-    cityInstantiation.objects.filter(id=inputFiles['objid'])[0].houses_json.save('houses.json', File(houseF))
-    cityInstantiation.objects.filter(id=inputFiles['objid'])[0].workplaces_json.save('workplaces.json', File(workplaceF))
-    cityInstantiation.objects.filter(id=inputFiles['objid'])[0].schools_json.save('schools.json', File(schoolF))
-    cityInstantiation.objects.filter(id=inputFiles['objid'])[0].ward_centre_distance_json.save('wardCentreDistance.json', File(wardCentreDistanceF))
-    cityInstantiation.objects.filter(id=inputFiles['objid'])[0].common_area_json.save('commonArea.json', File(commonAreaF))
-    cityInstantiation.objects.filter(id=inputFiles['objid'])[0].fraction_population_json.save('fractionPopulation.json', File(fractionPopulationF))
+        cityInstantiation.objects.filter(id=inputFiles['objid'])[0].individuals_json.save('individuals.json', File(indF))
+        cityInstantiation.objects.filter(id=inputFiles['objid'])[0].houses_json.save('houses.json', File(houseF))
+        cityInstantiation.objects.filter(id=inputFiles['objid'])[0].workplaces_json.save('workplaces.json', File(workplaceF))
+        cityInstantiation.objects.filter(id=inputFiles['objid'])[0].schools_json.save('schools.json', File(schoolF))
+        cityInstantiation.objects.filter(id=inputFiles['objid'])[0].ward_centre_distance_json.save('wardCentreDistance.json', File(wardCentreDistanceF))
+        cityInstantiation.objects.filter(id=inputFiles['objid'])[0].common_area_json.save('commonArea.json', File(commonAreaF))
+        cityInstantiation.objects.filter(id=inputFiles['objid'])[0].fraction_population_json.save('fractionPopulation.json', File(fractionPopulationF))
 
-    print("objects saved")
+        print("objects saved")
 
-    cityInstantiation.objects.filter(id=inputFiles['objid']).update(
-        # trans_coeff_file = json.dumps(transCoeff, default=convert),
-        status = 'Complete',
-        created_on = timezone.now()
-    )
-    log.info(f"Instantiaion job {cityInstantiation.objects.filter(id=inputFiles['objid'])[0].inst_name.city_name} was completed successfully.")
-    del individuals, houses, workplaces, schools, wardCentreDistances, commonAreas, fractionPopulations
-    return True
-    # except Exception as e:
-    #     cityInstantiation.objects.filter(id=inputFiles['objid']).update(
-    #         status = 'Error',
-    #         created_on = timezone.now()
-    #     )
-    #     print(e)
-    #     print("Issue with instantiation")
-    #     log.error(f"Instantiaion job {cityInstantiation.objects.filter(id=inputFiles['objid'])[0].inst_name.city_name} terminated abruptly with error {e} at {sys.exc_info()}.")
-    #     return False
+        cityInstantiation.objects.filter(id=inputFiles['objid']).update(
+            # trans_coeff_file = json.dumps(transCoeff, default=convert),
+            status = 'Complete',
+            created_on = timezone.now()
+        )
+        log.info(f"Instantiaion job {cityInstantiation.objects.filter(id=inputFiles['objid'])[0].inst_name.city_name} was completed successfully.")
+        del individuals, houses, workplaces, schools, wardCentreDistances, commonAreas, fractionPopulations
+        return True
+    except Exception as e:
+        cityInstantiation.objects.filter(id=inputFiles['objid']).update(
+            status = 'Error',
+            created_on = timezone.now()
+        )
+        print(e)
+        print("Issue with instantiation")
+        log.error(f"Instantiaion job {cityInstantiation.objects.filter(id=inputFiles['objid'])[0].inst_name.city_name} terminated abruptly with error {e} at {sys.exc_info()}.")
+        return False
 
 
 def run_cmd(prgCall):
