@@ -9,7 +9,7 @@ from rest_framework import routers
 from .views import *
 
 router = routers.DefaultRouter()
-# router.register(r'city', campusTransCoeffViewSet)
+# router.register(r'city', cityTransCoeffViewSet)
 router.register(r'sim', simResultsViewSet)
 
 sim_result_rest = simResultsViewSet.as_view({
@@ -46,9 +46,9 @@ urlpatterns = [
     re_path(r'^simulation/create/$', createSimulationView.as_view(), name='createSimulation'),
     re_path(r'^simulation/delete/(?P<pk>\d+)/$', deleteSimulationView.as_view(), name='deleteSimulation'),
     re_path(r'^simulation/view/(?P<pk>\d+)/$', viewSimulationView.as_view(), name='viewSimulation'),
-    # re_path(r'^simulation/render/(?P<pk>\d+)/$', visualizeSingleSimulation.as_view(), name='visualizeSimulation'),
+    re_path(r'^simulation/render/(?P<pk>\d+)/$', visualizeSingleSimulation.as_view(), name='visualizeSimulation'),
     re_path(r'^simulation/fetch/(?P<pk>\d+)/$', sim_result_rest, name='rest_sim_result'),
-    # re_path(r'^simulation/render/multiple/$', visualizeMultiSimulation.as_view(), name='visualizeMultiSimulations'),
+    re_path(r'^simulation/render/multiple/$', visualizeMultiSimulation.as_view(), name='visualizeMultiSimulations'),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

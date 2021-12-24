@@ -223,7 +223,7 @@ class userActivityView(LoginRequiredMixin, AddUserToContext, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['interventions'] = interventions.get_all(self.request.user)
-        # context['simulations'] = simulationParams.get_all(self.request.user)
+        context['simulations'] = simulationParams.get_all(self.request.user)
         context['cities'] = cityData.get_all(self.request.user)
         return context
 
@@ -470,8 +470,38 @@ class deleteSimulationView(LoginRequiredMixin, AddUserToContext, DeleteView):
         context['type'] = 'simulation job'
         return context
 
+class visualizeSingleSimulation(LoginRequiredMixin, AddUserToContext, TemplateView):
+    template_name = 'interface/visualizeSimulation.html'
+    model = simulationResults
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['pk'] = self.kwargs.get('pk')
+        self.obj = simulationResults.objects.filter(pk=self.kwargs.get('pk')).first()
+        context['results'] = json.dumps(self.obj.agg_results)
+        context['status'] = json.dumps(self.obj.status)
+        return context
 
 
+## TODO: Make this a REST service
+class visualizeMultiSimulation(LoginRequiredMixin, AddUserToContext, TemplateView):
+    template_name = 'interface/visualizeMultiSimulation.html'
+    model = simulationResults
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_sims = simulationResults.objects.filter(created_by=self.request.user, status='A').all()
+        data = []
+        for sim in user_sims:
+            data.append({
+                "id": sim.simulation_id.id,
+                "name": sim.simulation_id.simulation_name,
+                "city": sim.simulation_id.city_instantiation.inst_name.city_name,
+                "intv": sim.simulation_id.intervention.intv_name,
+                "enable_testing": 1 if sim.simulation_id.enable_testing else 0
+            })
+        context['results'] = data
+        return context
 
 
 

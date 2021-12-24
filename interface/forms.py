@@ -8,7 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 
 # from simulator.staticInst.CityGen import City
 
-from .models import userModel, cityData, cityInstantiation
+from .models import userModel, cityData, cityInstantiation, interventions
 from .helper import get_or_none, validate_password
 
 import pandas as pd
@@ -94,9 +94,9 @@ class addCityDataForm(forms.ModelForm):
             raise ValidationError({"city_name": "The name of the instantiation should not be empty"})
         # Once Instantiation is done add validations
         try:
-            city_geojson = gpd.read_file(self.cleaned_data.get('city_geojson'))
+            # city_geojson = gpd.read_file(self.cleaned_data.get('city_geojson'))
             demographics_csv = pd.read_csv(self.cleaned_data.get('demographics_csv'))
-            city_profile_json = pd.read_json(self.cleaned_data.get('city_profile_json'))
+            # city_profile_json = pd.read_json(self.cleaned_data.get('city_profile_json'))
             households_csv = pd.read_csv(self.cleaned_data.get('households_csv'))
             employment_csv = pd.read_csv(self.cleaned_data.get('employment_csv'))
             odmatrix_csv = pd.read_csv(self.cleaned_data.get('odmatrix_csv'))
