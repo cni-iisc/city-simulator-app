@@ -197,7 +197,7 @@ function intervention_json_gen(intv, complaince_probability, num_days, spaces) {
                 default :
                     if (intv[j][i] > 0){
                         if (intv[j][i] == 5){
-                            console.log(spaces[j])
+                            // console.log(spaces[j])
                             intv_json_const[[intv_sim_map[String(intv[j][i])]]] = {
                                 "active" : true,
                                 // "spaces": []
