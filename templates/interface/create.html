@@ -21,6 +21,11 @@
                 {{ field }}
             </div>
             {% endfor %}
+            <br>
+            <h5>Files of Configured Cities</h5>
+            <small>Download <a target='_blank' href='/static/sampleData/bangalore.zip'>Bangalore city </a> details </small><br>
+            <small>Download <a target='_blank' href='/static/sampleData/mumbai.zip'>Mumbai city </a> details </small><br><br>
+            
             <a class="btn btn-md btn-warning" href="{% url 'profile' %}"><i class="fa fa-angle-left"> </i> Go Back to User Home</a>
             <input type="submit" value="Submit" class="btn btn-success btn-md" onclick="$('#loading').show()">
 

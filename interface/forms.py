@@ -80,12 +80,12 @@ class addCityDataForm(forms.ModelForm):
         labels = {
             "city_name": mark_safe("Name for the instatiation<br>"),
             "target_population": mark_safe("Enter city target population<br>"),
-            "city_geojson": mark_safe("This contains ward boundaries of a city.<br> <small>View Sample <a target='_blank' href='/static/sampleData/common_areas.csv'>City geojson file</a></small><br>"),
-            "demographics_csv": mark_safe("This contains demographic data for all wards of the city.<br> <small>View Sample <a target='_blank' href='/static/sampleData/staff.csv'>Demographic detail file</a></small><br>"),
-            "city_profile_json": mark_safe("This contains age, household size and school size distribution for the city.<br> <small>View Sample <a target='_blank' href='/static/sampleData/mess.csv'>City profile file</a></small><br>"),
-            "households_csv": mark_safe("This contains household data for all wards of the city..<br> <small>View Sample <a target='_blank' href='/static/sampleData/timetable.csv'>Household detail file</a></small><br>"),
-            "employment_csv": mark_safe("This contains employment data for all wards of the city.<br> <small>View Sample <a target='_blank' href='/static/sampleData/student.csv'>Employment Detail file</a></small><br>"),
-            "odmatrix_csv": mark_safe("This contains origin-destination matrix illustrating commute distance between wards.<br> <small>View Sample <a target='_blank' href='/static/sampleData/classes.csv'>ODMatrix file</a></small><br>")
+            "city_geojson": mark_safe("This contains ward boundaries of a city.<br> <small>View Sample <a target='_blank' href='/static/sampleData/city.geojson'>City geojson file</a></small><br>"),
+            "demographics_csv": mark_safe("This contains demographic data for all wards of the city.<br> <small>View Sample <a target='_blank' href='/static/sampleData/demographics.csv'>Demographic detail file</a></small><br>"),
+            "city_profile_json": mark_safe("This contains age, household size and school size distribution for the city.<br> <small>View Sample <a target='_blank' href='/static/sampleData/cityProfile.json'>City profile file</a></small><br>"),
+            "households_csv": mark_safe("This contains household data for all wards of the city..<br> <small>View Sample <a target='_blank' href='/static/sampleData/households.csv'>Household detail file</a></small><br>"),
+            "employment_csv": mark_safe("This contains employment data for all wards of the city.<br> <small>View Sample <a target='_blank' href='/static/sampleData/employment.csv'>Employment Detail file</a></small><br>"),
+            "odmatrix_csv": mark_safe("This contains origin-destination matrix illustrating commute distance between wards.<br> <small>View Sample <a target='_blank' href='/static/sampleData/ODMatrix.csv'>ODMatrix file</a></small><br>")
         }
 
     def clean(self):
