@@ -4,13 +4,13 @@ var intv_code = {
     "1": "Case Isolation",
     "2": "Home Quarantine ",
     "3": "City Lockdown",
-    "4": "Case isolation and Home Quarantine",
-    "5": "case_isolation_and_home_quarantine_sd_70_plus",
-    "6": "lockdown_fper_ci_hq_sd_70_plus_sper_ci",
-    "7": "lockdown_fper",
-    "8": "ld_fper_ci_hq_sd65_sc_sper_sc_tper",
-    "9": "ld_fper_ci_hq_sd65_sc_sper",
-    "10": "ld_fper_ci_hq_sd65_sc_oe_sper"
+    "4": "Case isolation and Home Quarantine of infected households(IH)",
+    "5": "Case isolation and Home_quarantine of IH and social distancing of those aged over 70",
+    // "6": "City lockdown followed by case isolation home quarentine and social distancing of those aged 70 years of age followed by case isolation",
+    // "7": "City lockdown and case isolation"
+    // "8": "ld_fper_ci_hq_sd65_sc_sper_sc_tper",
+    // "9": "ld_fper_ci_hq_sd65_sc_sper",
+    // "10": "ld_fper_ci_hq_sd65_sc_oe_sper"
 };
 
 //Key-value store to map code to the intervention definiton in the simulator
@@ -20,12 +20,12 @@ var intv_sim_map = {
     "2": "home_quarantine",
     "3": "lockdown",
     "4": "case_isolation_and_home_quarantine",
-    "5": "case_isolation_and_home_quarantine_sd_70_plus",
-    "6": "lockdown_fper_ci_hq_sd_70_plus_sper_ci",
-    "7": "lockdown_fper",
-    "8": "ld_fper_ci_hq_sd65_sc_sper_sc_tper",
-    "9": "ld_fper_ci_hq_sd65_sc_sper",
-    "10": "ld_fper_ci_hq_sd65_sc_oe_sper"
+    "5": "case_isolation_and_home_quarantine_sd_70_plus"
+    // "6": "lockdown_fper_ci_hq_sd_70_plus_sper_ci",
+    // "7": "lockdown_fper",
+    // "8": "ld_fper_ci_hq_sd65_sc_sper_sc_tper",
+    // "9": "ld_fper_ci_hq_sd65_sc_sper",
+    // "10": "ld_fper_ci_hq_sd65_sc_oe_sper"
 };
 
 // This is populated based on the interaction space codes in simulator/cpp-simulator/models.h
@@ -79,6 +79,7 @@ function makeInterventionLayout(count, elemId){
     var select = $('<select>', {
         id: "mulIntv"+elemId,
         'class': "li-interv-select",
+        'style': 'overflow:hidden',
         'multiple': true,
     });
 
@@ -117,15 +118,15 @@ function makeInterventionLayout(count, elemId){
 
 
     //Add the button to delete the intervention bloc to col-3
-    $("<button>", {
-        'html': '<i class="fas fa-2x fa-times-circle"></i>Delete Block',
-        'class': 'btn btn-sm btn-danger',
-        'on' : {
-            click: function(){
-                $(this).parent().parent().remove();
-            }
-        }
-    }).appendTo(col3);
+    // $("<button>", {
+    //     'html': '<i class="fas fa-2x fa-times-circle"></i>Delete Block',
+    //     'class': 'btn btn-sm btn-danger',
+    //     'on' : {
+    //         click: function(){
+    //             $(this).parent().parent().remove();
+    //         }
+    //     }
+    // }).appendTo(col3);
 
     //make a div of checkboxes for the interaction space
     // var spaceDiv = $('<div>', {
