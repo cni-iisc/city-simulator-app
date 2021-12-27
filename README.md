@@ -38,6 +38,7 @@ Before going to the next step, let us fetch the code and build the executable fo
 
 ```shell
 (env) $ git submodule update --init
+(env) $ git submodule update --remote
 (env) $ cd simulator/cpp-simulator
 (env) $ make -f Makefile_np all
 ```
