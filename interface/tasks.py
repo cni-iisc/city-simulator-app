@@ -21,7 +21,7 @@ import logging
 log = logging.getLogger('celery_log')
 
 # Custom modules taken from submodule
-from simulator.staticInst.CityGen import *
+from simulator.staticInst.CityGenInterface import *
 
 
 @shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_RETRIES)
