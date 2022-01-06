@@ -147,7 +147,7 @@ def run_simulation(id, dirName, intv_name):#  , enable_testing,
         status='Complete',
         completed_at=timezone.now()
         )
-        run_aggregate_sims(id)
+        run_aggregate_sims(id, dirName)
         log.info(f"Simulation job { obj.simulation_name } is complete and the results are aggregated.")
         return True
     except Exception as e:

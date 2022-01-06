@@ -296,6 +296,7 @@ class simulationParams(models.Model):
 class simulationResults(models.Model):
     simulation_id = models.OneToOneField(simulationParams, primary_key=True, on_delete=models.CASCADE)
     agg_results = models.JSONField(null=True)
+    choroplethData_json = models.JSONField(null=True)
     status = models.CharField(max_length=3, default='NA')
     completed_at = models.DateTimeField(auto_now_add=True, null=True)
     created_by = models.ForeignKey(userModel, null=True, on_delete=models.CASCADE)

@@ -479,6 +479,7 @@ class visualizeSingleSimulation(LoginRequiredMixin, AddUserToContext, TemplateVi
         context['pk'] = self.kwargs.get('pk')
         self.obj = simulationResults.objects.filter(pk=self.kwargs.get('pk')).first()
         context['results'] = json.dumps(self.obj.agg_results)
+        context['choroplethData'] = json.dumps(self.obj.choroplethData_json)
         context['status'] = json.dumps(self.obj.status)
         return context
 

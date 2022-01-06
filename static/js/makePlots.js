@@ -27,7 +27,7 @@ function makeTraceTriplets(time, mean, pos_std, neg_std, label, plotColor=null, 
         y: pos_std,
         opacity: 0,
         showlegend: false,
-        line: { color:  "rgba("+ r +","+ g +"," + b +",0.2)",  },
+        line: { color:  "rgba("+ r +","+ g +"," + b +",0.5)",  },
         mode: "lines",
         type: "scatter"
     };
@@ -38,7 +38,7 @@ function makeTraceTriplets(time, mean, pos_std, neg_std, label, plotColor=null, 
         fill: 'tonexty',
         opacity: 0,
         showlegend: false,
-        line: { color:  "rgba("+ r +","+ g +"," + b +",0.2)", },
+        line: { color:  "rgba("+ r +","+ g +"," + b +",0.5)", },
         mode: "lines",
         type: "scatter"
     };
@@ -52,7 +52,7 @@ function makeTraceTriplets(time, mean, pos_std, neg_std, label, plotColor=null, 
         showlegend: true,
         line: {
             color: "rgb("+ r +","+ g +"," + b +")",
-            width: 3
+            width: 4
         }
     };
 
@@ -97,11 +97,17 @@ function makePlot(data, title, label, idx){
 
 
 
-
-
-
-
-
-
-
- 
+function makeChoropleth(choropleth_data){
+    var layout = {
+        geo: {
+            projection: {
+                type: 'MultiPolygon'
+            }
+        }
+    };
+    var currDiv = document.createElement("div");
+    currDiv.className = "col";
+    currDiv.id="choroplethPlot";
+    Plotly.plot(currDiv, choropleth_data, layout, {showLink: false});
+    return currDiv
+}

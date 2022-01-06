@@ -17,4 +17,4 @@ class simResultsSerializer(serializers.HyperlinkedModelSerializer):
     simulation_id = serializers.HyperlinkedRelatedField(view_name='rest_sim_result', queryset=simulationParams.objects.all())
     class Meta:
         model = simulationResults
-        fields = ['simulation_id', 'agg_results']
+        fields = ['simulation_id', 'agg_results', 'choroplethData_json']

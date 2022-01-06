@@ -5,6 +5,9 @@ import os
 import datetime
 import numpy as np
 import pandas as pd
+import geopandas as gpd
+import plotly.express as px
+import plotly
 
 from django.urls import reverse
 from django.core.exceptions import ValidationError
@@ -93,7 +96,7 @@ def convert(o):
 
 
 ### Function to aggregate resutls from specified number of simulatoin iterations and serialize
-def run_aggregate_sims(simPK):
+def run_aggregate_sims(simPK, dirName2):
     num_iterations = simulationParams.objects.get(id=simPK).simulation_iterations
     dirName = simulationParams.objects.get(id=simPK).output_directory
     print("Simulation Details Loaded")
@@ -111,6 +114,36 @@ def run_aggregate_sims(simPK):
         fatalities = pd.concat([fatalities, pd.read_csv(f"{ dirName }_id_{ i }/num_fatalities.csv")], ignore_index=True)
         recovered = pd.concat([recovered, pd.read_csv(f"{ dirName }_id_{ i }/num_recovered.csv")], ignore_index=True)
         disease_label_stats = pd.concat([disease_label_stats, pd.read_csv(f"{ dirName }_id_{ i }/disease_label_stats.csv")], ignore_index=True)
+    try:
+        # print(f"{ dirName }_id_0/ward_infected.csv")
+        wardinfected_df = pd.read_csv(f"{ dirName }_id_0/ward_infected.csv")
+        # print(wardinfected_df)
+        temp = {}
+        temp["wardIndex"] = range(len(wardinfected_df))
+        temp["num_infected"] = wardinfected_df["ward_infected"]
+        wardinfected_df = pd.DataFrame(temp)
+        geo_file = dirName2.replace("instantiation","cityData")
+        # print(geo_file)
+        map_df = gpd.read_file(f"{geo_file}/city.geojson")
+        # print(map_df)
+        data = map_df.merge(wardinfected_df, left_on=['wardIndex'], right_on=['wardIndex'])
+        choroplethData_json = data.to_json()
+        print("Data Available for choropleth integration")
+        fig = px.choropleth(data, geojson = data.geometry, locations = data.index, color = "num_infected", hover_name = data["wardName"], color_continuous_scale = "Viridis")
+        print('Figure created')
+        fig.update_geos(fitbounds = "locations", visible = True)
+        fig.update_layout(title_text = "Cumulative Infected by Ward")
+        fig.update(layout = dict(title=dict(x=0.5)))
+        fig.update_layout(margin={"r":0,"t":30,"l":10,"b":10}, coloraxis_colorbar={'title':'num_infected'})
+        print("Figure Updated")
+        # fig_json = fig.to_json()
+        # plotStr = plotly.offline.plot(data, include_plotlyjs=False, output_type='div')
+        savePlotDir = f"{ dirName }_id_0/ward_infected_map.html"
+        fig.write_html(savePlotDir, full_html=False, include_plotlyjs='cdn')
+        
+        print("Figure Saved")
+    except:
+        print("Error in choropleth creation")
 
     # Added by Prashanth and Nihesh to fix plotting issues...
     num_days = int(len(affected)/(num_iterations*4))
@@ -221,6 +254,7 @@ def run_aggregate_sims(simPK):
     sim = simulationResults(
         simulation_id=simulationParams.objects.get(id=simPK),
         agg_results=data,
+        choroplethData_json=choroplethData_json,
         status='A',
         completed_at=datetime.datetime.now(),
         created_by = simulationParams.objects.get(id=simPK).created_by

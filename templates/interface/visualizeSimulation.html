@@ -8,6 +8,10 @@
 
 <div class="row">
   <div class="col-sm-2">
+      <div class="container-fluid" style="margin-top:40px">
+      <iframe src="{% static 'sampleData/ward_infected_map.html' %}" width="500" height="400"></iframe>
+      </div>
+
       <div class="form-check form-check-inline">
         <input class="form-check-input" type="radio" name="inlineRadioOptions" id="dailyRadio" value="daily" checked>
         <label class="form-check-label" for="dailyRadio">Daily</label>
@@ -25,21 +29,24 @@
       <label for="checkbox-2">Recovered</label><br>
       <input type="checkbox" name="plot" id="checkbox-3" value="fatalities" class="custom" />
       <label for="checkbox-3">Fatalities</label><br>
-      <!-- <input type="checkbox" name="plot" id="checkbox-4" value="positive_cases" class="custom" />
-      <label for="checkbox-4">Positive Cases</label><br>
+      <!-- <input type="checkbox" name="plot" id="checkbox-4" value="ward_infections" class="custom" />
+      <label for="checkbox-4">Cumulative Infected by Ward</label><br>
       <input type="checkbox" name="plot" id="checkbox-5" value="people_tested" class="custom" />
       <label for="checkbox-5">Total tests</label><br> -->
       <br>
       <input type="submit" value="Submit" class="btn btn-success btn-md" id="submitBtn">
       <a class="btn btn-md btn-warning" href="{% url 'profile' %}"><i class="fa fa-angle-left"> </i> Go Back to User Home</a>
   </div>
-  <div class="col" id="target"></div>
+  <div class="col" id="target" style="padding-top:480px;padding-bottom:10px"></div>
 </div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
   var x_data = {{ results|safe }};
+  var choropleth_data = {{ choroplethData| safe}};
   $("#submitBtn").click(function () {
+    console.log("Printing x_data");
     console.log(x_data);
+    console.log(choropleth_data);
     
     $("#target").empty()
 
@@ -47,13 +54,20 @@
     $.each($("input[name='inlineRadioOptions']:checked"), function () {
           plotOption = $(this).val();
     });
-    console.log(x_data[plotOption]);
+    // console.log(x_data[plotOption]);
 
     var options = [];
     // Jquery for checkbox input
     $.each($("input[name='plot']:checked"), function () {
       options.push($(this).val());
     });
+
+    // Choropleth Code
+
+    // var choroplethDiv = makeChoropleth(choropleth_data)
+    // document.getElementById("target").appendChild(choroplethDiv)
+
+    // end Choropleth Code
 
 
     for (let i = 0; i < parseInt(options.length); i++) {
